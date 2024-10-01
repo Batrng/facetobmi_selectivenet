@@ -168,7 +168,7 @@ def train_val_test_split(dataset, augmented=True, vit_transformed=True):
 
 # get dataloaders
 def get_dataloaders(batch_size=16, augmented=True, vit_transformed=True, show_sample=False):
-    bmi_dataset = BMIDataset('../data/data.csv', '../data/Images', 'bmi', ToTensor())
+    bmi_dataset = BMIDataset('C:/Users/nguyen/TestProjects/selectivepred/facetobmi/face-to-bmi-vit/data/data.csv', 'C:/Users/nguyen/TestProjects/selectivepred/facetobmi/face-to-bmi-vit/data/Images/', 'bmi', ToTensor())
     if show_sample:
         train_dataset, val_dataset, test_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
         show_sample_image(train_dataset)
@@ -177,7 +177,6 @@ def get_dataloaders(batch_size=16, augmented=True, vit_transformed=True, show_sa
     train_loader = DataLoader(train_dataset, batch_size=batch_size,  shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size,  shuffle=False)
-
     return train_loader, test_loader, val_loader
 
 

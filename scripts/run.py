@@ -2,25 +2,43 @@ import torch
 import torch.nn as nn
 from loader import get_dataloaders
 from models import get_model
-
+from SelectiveNet import *
 import numpy as np
 import argparse
+from models import get_model
+from selectiveLoss import SelectiveLoss
+from collections import OrderedDict
+from metric import MetricDict
 
-
+alpha = 0.5
 # train one epoch
-def train(train_loader, model, loss_fn, optimizer):
+def train(train_loader, model, loss_fn, loss_selective, optimizer):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-
     # Train
     model.train()
     for batch, (X, y) in enumerate(train_loader):
-        X = X.to(device)
-        y = y.to(device)
-
-        # Compute prediction error
-        pred = model(X)
+        X = X.to(device).float()
+        y = y.to(device).float()
+        
+        # Compute prediction
+        pred, pred_select, pred_aux = model(X)
         y = y.unsqueeze(1).float()
-        loss = loss_fn(pred, y)
+        #loss_dict = OrderedDict()
+        selective_loss = loss_selective(pred, pred_select, y)
+        selective_loss *= alpha
+        #loss_dict['selective_loss'] = selective_loss.detach().cpu().item()
+
+ 
+        ce_loss = loss_fn(pred_aux, y)
+        ce_loss *= (1.0 - alpha)
+        #loss_dict['ce_loss'] = ce_loss.detach().item()
+
+        # total loss
+        loss = selective_loss + ce_loss
+        loss = loss.float() 
+        #loss_dict['loss'] = loss.detach().cpu().item()
+        #train_metric_dict = MetricDict()
+        #train_metric_dict.update(loss_dict)
 
         # Backpropagation
         optimizer.zero_grad()
@@ -28,13 +46,15 @@ def train(train_loader, model, loss_fn, optimizer):
         optimizer.step()
 
         # Show progress
-        if batch % 100 == 0:
+        if batch % 2 == 0:
             loss, current = loss.item(), batch * len(X)
+            print(batch)
             print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
 
 
 # validate and return mae loss
-def validate(val_loader, model):
+def validate(val_loader, model, loss_fn):
+    #val_metric_dict = MetricDict()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Validation
@@ -43,27 +63,43 @@ def validate(val_loader, model):
     val_loss_mae = 0
     with torch.no_grad():
         for batch_idx, (X, y) in enumerate(val_loader):
-            X = X.to(device)
-            y = y.to(device)
+            X = X.to(device).float()
+            y = y.to(device).float()
 
-            pred = model(X)
+            pred, pred_select, pred_aux = model(X)
             y = y.unsqueeze(1)
+            #loss_dict_val = OrderedDict()
+            selective_loss = loss_selective(pred, pred_select, y)
+            selective_loss *= alpha
+            ##loss_dict_val['selective_loss'] = selective_loss.detach().cpu().item()
+            
 
-            loss_mse = nn.MSELoss()(pred, y)
-            val_loss_mse += loss_mse.item()
-            loss_mae = nn.L1Loss()(pred, y)
-            val_loss_mae += loss_mae.item()
+            ce_loss = loss_fn(pred_aux, y)
+            ce_loss *= (1.0 - alpha)
+           ## loss_dict_val['ce_loss'] = ce_loss.detach().item()
 
-    val_loss_mse /= len(val_loader)
-    val_loss_mae /= len(val_loader)
+            # total loss
+            loss = selective_loss + ce_loss
+            loss = loss.float() 
+            ##loss_dict_val['loss'] = loss.detach().cpu().item()
+            #train_metric_dict = MetricDict()
+            #train_metric_dict.update(loss_dict_val)
 
-    print(f"val mse loss: {val_loss_mse:>7f}, val mae loss: {val_loss_mae}")
-    return val_loss_mae
+#loss_mse =nn.MSELoss(pred, y).float()
+#val_loss_mse += loss_mse.item()
+#loss_mae = nn.L1Loss()(pred, y)
+#val_loss_mae += loss_mae.item()
+
+#val_loss_mse /= len(val_loader)
+#val_loss_mae /= len(val_loader)
+
+    print(f"val mse loss: {loss.item():>7f}")
+    return loss #val_loss_mae
 
 
 
 # test and return mse and mae loss
-def test(test_loader, model):
+def test(test_loader, model, loss_fn):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Test
@@ -75,19 +111,36 @@ def test(test_loader, model):
             X = X.to(device)
             y = y.to(device)
 
-            pred = model(X)
+            pred, pred_select, pred_aux = model(X)
+            y = y.unsqueeze(1)
+            #loss_dict_test = OrderedDict()
+            selective_loss = loss_selective(pred, pred_select, y)
+            selective_loss *= alpha
+            #loss_dict_test['selective_loss'] = selective_loss.detach().cpu().item()
             y = y.unsqueeze(1)
 
+            ce_loss = loss_fn(pred_aux, y)
+            ce_loss *= (1.0 - alpha)
+            #loss_dict_test['ce_loss'] = ce_loss.detach().item()
+
+            # total loss
+            loss = selective_loss + ce_loss
+            loss = loss.float() 
+            #loss_dict_test['loss'] = loss.detach().cpu().item()
+            #train_metric_dict = MetricDict()
+            #train_metric_dict.update(loss_dict_test)
+            """
             loss_mse = nn.MSELoss()(pred, y)
             test_loss_mse += loss_mse.item()
             loss_mae = nn.L1Loss()(pred, y)
             test_loss_mae += loss_mae.item()
+            """
 
-    test_loss_mse /= len(test_loader)
-    test_loss_mae /= len(test_loader)
+   # test_loss_mse /= len(test_loader)
+   # test_loss_mae /= len(test_loader)
 
-    print(f"test mse loss: {test_loss_mse:>7f}, test mae loss: {test_loss_mae}")
-    return test_loss_mse, test_loss_mae
+    print(f"test mse loss: {loss.item():>7f}")
+    return loss #test_loss_mse, test_loss_mae
 
 
 
@@ -121,38 +174,45 @@ class EarlyStopping:
 
     def save_checkpoint(self, val_loss, model):
         if self.verbose:
-            print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
-        torch.save(model.state_dict(), '../weights/aug_epoch_7.pt')  # save checkpoint
+            print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss.item():.6f}).  Saving model ...')
+        torch.save(model.state_dict(), '../weights/aug_epoch_8.pt')  # save checkpoint Bao
         self.val_loss_min = val_loss
 
 
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-
+    print(device)
     parser = argparse.ArgumentParser()
     parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
     args = parser.parse_args()
 
-    train_loader, val_loader, test_loader = get_dataloaders(16, augmented=args.augmented, vit_transformed=True, show_sample=True)
-    model = get_model().float().to(device)
+    train_loader, val_loader, test_loader = get_dataloaders(16, augmented=args.augmented, vit_transformed=True, show_sample=False)
+    
+    # model for normal and selectivenet
+    features = get_model().float().to(device)
+    model = SelectiveNet(features, 80).float().to(device)
+
+    # optimizer and loss
+
     loss_fn = nn.MSELoss()
+    loss_selective = SelectiveLoss(loss_fn, 0.7) #edit coverage
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    epochs = 50
+    epochs = 1
     early_stopping = EarlyStopping(patience=5, verbose=True)
 
     for t in range(epochs):
         print(f"Epoch {t + 1}\n-------------------------------")
-        train(train_loader, model, loss_fn, optimizer)
-        val_loss = validate(test_loader, model)
+        train(train_loader, model, loss_fn, loss_selective, optimizer)
+        val_loss = validate(test_loader, model, loss_fn=nn.MSELoss())
         early_stopping(val_loss, model)
 
         if early_stopping.early_stop:
             print("Early stopping")
             break
 
-    model.load_state_dict(torch.load('../weights/checkpoint.pt'))
-    test(test_loader, model)
+    model.load_state_dict(torch.load('C:/Users/nguyen/TestProjects/selectivepred/facetobmi/face-to-bmi-vit/weights/aug_epoch_8.pt'))
+    test(test_loader, model, loss_fn)
 
     print("Done!")
 
