@@ -37,7 +37,7 @@ def train(train_loader, model, loss_fn, optimizer):
         #accuracy
         total += y.size(0)
         correct += (pred.round() == y).sum().item()
-        accuracy = 100.*correct/total
+        accuracy = correct/total
 
         #precision
         true_positive += (pred * y).sum().item()  # TP: Both pred and actual are 1
@@ -53,7 +53,7 @@ def train(train_loader, model, loss_fn, optimizer):
         #    loss, current = loss.item(), batch * len(X)
         #    print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
 
-        wandb.log({"loss_train_mse":loss, "precision":precision, "accuracy":accuracy, "mae": mae_loss})
+        wandb.log({"loss_train_mse":loss, "precision_train":precision, "accuracy_train":accuracy, "loss_train_mae": mae_loss})
 # validate and return mae loss
 def validate(val_loader, model):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
@@ -92,14 +92,14 @@ def validate(val_loader, model):
                 precision = true_positive / (true_positive + false_positive)
             else:
                 precision = 0  # Avoid division by zero
-            wandb.log({"loss_val_mse":val_loss_mse, "precision":precision, "accuracy":accuracy, "mae": val_loss_mae})
+            wandb.log({"loss_val_mse":val_loss_mse, "precision_val":precision, "accuracy_val":accuracy, "loss_val_mae": val_loss_mae})
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
     
 
     #print(f"val mse loss: {val_loss_mse:>7f}, val mae loss: {val_loss_mae}")
-    return val_loss_mse, val_loss_mae
+    return val_loss_mse
 
 
 
@@ -140,7 +140,7 @@ def test(test_loader, model):
                 precision = true_positive / (true_positive + false_positive)
             else:
                 precision = 0  # Avoid division by zero
-            wandb.log({"loss_val_mse":test_loss_mse, "precision":precision, "accuracy":accuracy, "mae": test_loss_mae})
+            wandb.log({"loss_test_mse":test_loss_mse, "precision_test":precision, "accuracy_test":accuracy, "loss_test_mae": test_loss_mae})
 
 
     test_loss_mse /= len(test_loader)
