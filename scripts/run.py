@@ -55,7 +55,7 @@ def validate(val_loader, model):
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
-    wandb.log({"loss_val":loss})
+    wandb.log({"loss_val":val_loss_mse})
 
     print(f"val mse loss: {val_loss_mse:>7f}, val mae loss: {val_loss_mae}")
     return val_loss_mae
@@ -85,7 +85,7 @@ def test(test_loader, model):
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
-    wandb.log({"loss_train":loss})
+    wandb.log({"loss_train":test_loss_mse})
 
     print(f"test mse loss: {test_loss_mse:>7f}, test mae loss: {test_loss_mae}")
     return test_loss_mse, test_loss_mae
@@ -130,7 +130,7 @@ class EarlyStopping:
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    wandb.init(project="face2bmi", config={"learning_rate":0.001, "architecture": Resnet, "dataset": testdataset100, "epochs": 1}
+    wandb.init(project="face2bmi", config={"learning_rate":0.001, "architecture": "Resnet", "dataset": "testdataset100", "epochs": 1})
     parser = argparse.ArgumentParser()
     parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
     args = parser.parse_args()
@@ -154,6 +154,6 @@ if __name__ == "__main__":
 
     model.load_state_dict(torch.load('../weights/aug_epoch_7.pt'))
     test(test_loader, model)
-    wandb.finish
+    wandb.finish()
     print("Done!")
 
