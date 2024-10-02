@@ -49,9 +49,9 @@ def train(train_loader, model, loss_fn, optimizer):
             precision = 0  # Avoid division by zero
 
         # Show progress
-        if batch % 2 == 0:
-            loss, current = loss.item(), batch * len(X)
-            print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
+        #if batch % 2 == 0:
+        #    loss, current = loss.item(), batch * len(X)
+        #    print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
 
         wandb.log({"loss_train_mse":loss, "precision":precision, "accuracy":accuracy, "mae": mae_loss})
 # validate and return mae loss
@@ -98,7 +98,7 @@ def validate(val_loader, model):
     val_loss_mae /= len(val_loader)
     
 
-    print(f"val mse loss: {val_loss_mse:>7f}, val mae loss: {val_loss_mae}")
+    #print(f"val mse loss: {val_loss_mse:>7f}, val mae loss: {val_loss_mae}")
     return val_loss_mse, val_loss_mae
 
 
@@ -147,7 +147,7 @@ def test(test_loader, model):
     test_loss_mae /= len(test_loader)
     wandb.log({"loss_train":test_loss_mse})
 
-    print(f"test mse loss: {test_loss_mse:>7f}, test mae loss: {test_loss_mae}")
+    #print(f"test mse loss: {test_loss_mse:>7f}, test mae loss: {test_loss_mae}")
     return test_loss_mse, test_loss_mae
 
 
@@ -181,8 +181,8 @@ class EarlyStopping:
             self.counter = 0
 
     def save_checkpoint(self, val_loss, model):
-        if self.verbose:
-            print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
+        #if self.verbose:
+         #   print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
         torch.save(model.state_dict(), '../weights/aug_epoch_7.pt')  # save checkpoint
         self.val_loss_min = val_loss
 
