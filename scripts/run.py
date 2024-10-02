@@ -10,6 +10,11 @@ import wandb
 # train one epoch
 def train(train_loader, model, loss_fn, optimizer):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+    correct = 0
+    total = 0
+    true_positive = 0
+    false_positive = 0
+    mae_loss_fn = nn.L1Loss()
 
     # Train
     model.train()
@@ -19,19 +24,36 @@ def train(train_loader, model, loss_fn, optimizer):
         # Compute prediction error
         pred = model(X)
         y = y.unsqueeze(1).float()
-        loss = loss_fn(pred, y)
+        loss = loss_fn(pred, y) #mse
+
+        #mae
+        mae_loss = mae_loss_fn(pred, y).item() 
 
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
+        #accuracy
+        total += y.size(0)
+        correct += (pred.round() == y).sum().item()
+        accuracy = 100.*correct/total
+
+        #precision
+        true_positive += (pred * y).sum().item()  # TP: Both pred and actual are 1
+        false_positive += (pred * (1 - y)).sum().item()  # FP: Pred is 1, actual is 0
+
+        if (true_positive + false_positive) > 0:
+            precision = true_positive / (true_positive + false_positive)
+        else:
+            precision = 0  # Avoid division by zero
+
         # Show progress
         if batch % 2 == 0:
             loss, current = loss.item(), batch * len(X)
             print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
 
-        wandb.log({"loss_train":loss})
+        wandb.log({"loss_train_mse":loss, "precision":precision, "accuracy":accuracy, "mae": mae_loss})
 # validate and return mae loss
 def validate(val_loader, model):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
@@ -40,6 +62,10 @@ def validate(val_loader, model):
     model.eval()
     val_loss_mse = 0
     val_loss_mae = 0
+    total = 0
+    correct = 0
+    true_positive = 0
+    false_positive = 0
     with torch.no_grad():
         for batch_idx, (X, y) in enumerate(val_loader):
             X = X.to(device)
@@ -53,12 +79,27 @@ def validate(val_loader, model):
             loss_mae = nn.L1Loss()(pred, y)
             val_loss_mae += loss_mae.item()
 
+            #accuracy
+            total += y.size(0)
+            correct += (pred.round() == y).sum().item()
+            accuracy = 100.*correct/total
+
+            #precision
+            true_positive += (pred * y).sum().item()  # TP: Both pred and actual are 1
+            false_positive += (pred * (1 - y)).sum().item()  # FP: Pred is 1, actual is 0
+
+            if (true_positive + false_positive) > 0:
+                precision = true_positive / (true_positive + false_positive)
+            else:
+                precision = 0  # Avoid division by zero
+            wandb.log({"loss_val_mse":val_loss_mse, "precision":precision, "accuracy":accuracy, "mae": val_loss_mae})
+
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
-    wandb.log({"loss_val":val_loss_mse})
+    
 
     print(f"val mse loss: {val_loss_mse:>7f}, val mae loss: {val_loss_mae}")
-    return val_loss_mae
+    return val_loss_mse, val_loss_mae
 
 
 
@@ -70,6 +111,10 @@ def test(test_loader, model):
     model.eval()
     test_loss_mse = 0
     test_loss_mae = 0
+    total = 0
+    correct = 0
+    true_positive = 0
+    false_positive = 0
     with torch.no_grad():
         for batch_idx, (X, y) in enumerate(test_loader):
             X = X.to(device)
@@ -82,6 +127,21 @@ def test(test_loader, model):
             test_loss_mse += loss_mse.item()
             loss_mae = nn.L1Loss()(pred, y)
             test_loss_mae += loss_mae.item()
+            #accuracy
+            total += y.size(0)
+            correct += (pred.round() == y).sum().item()
+            accuracy = 100.*correct/total
+
+            #precision
+            true_positive += (pred * y).sum().item()  # TP: Both pred and actual are 1
+            false_positive += (pred * (1 - y)).sum().item()  # FP: Pred is 1, actual is 0
+
+            if (true_positive + false_positive) > 0:
+                precision = true_positive / (true_positive + false_positive)
+            else:
+                precision = 0  # Avoid division by zero
+            wandb.log({"loss_val_mse":test_loss_mse, "precision":precision, "accuracy":accuracy, "mae": test_loss_mae})
+
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
@@ -126,23 +186,33 @@ class EarlyStopping:
         torch.save(model.state_dict(), '../weights/aug_epoch_7.pt')  # save checkpoint
         self.val_loss_min = val_loss
 
+def get_args():
+    parser = argparse.ArgumentParser(description="Training script for a ResNet model.")
+    
+    # Add arguments
+    parser.add_argument('--epochs', type=int, default=10, help='Number of epochs to train')
+    parser.add_argument('--lr', type=float, default=0.001, help='Learning rate for the optimizer')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size for data loader')
+    
+    # Parse arguments
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
+    args = get_args()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     wandb.init(project="face2bmi", config={"learning_rate":0.001, "architecture": "Resnet", "dataset": "testdataset100", "epochs": 1})
     parser = argparse.ArgumentParser()
     parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
     args = parser.parse_args()
 
-    train_loader, val_loader, test_loader = get_dataloaders(16, augmented=args.augmented, vit_transformed=True, show_sample=True)
+    train_loader, val_loader, test_loader = get_dataloaders(args.batch_size, augmented=args.augmented, vit_transformed=True, show_sample=True)
     model = get_model().float().to(device)
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    epochs = 1
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     early_stopping = EarlyStopping(patience=5, verbose=True)
 
-    for t in range(epochs):
+    for t in range(args.epochs):
         print(f"Epoch {t + 1}\n-------------------------------")
         train(train_loader, model, loss_fn, optimizer)
         val_loss = validate(test_loader, model)
