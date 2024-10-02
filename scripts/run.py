@@ -203,9 +203,9 @@ if __name__ == "__main__":
     args = get_args()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     wandb.init(project="face2bmi", config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset})
-    parser = argparse.ArgumentParser()
+    #parser = argparse.ArgumentParser()
     #parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
-    args = parser.parse_args()
+    #args = parser.parse_args()
 
     train_loader, val_loader, test_loader = get_dataloaders(args.batch_size, augmented=args.augmented, vit_transformed=True, show_sample=True)
     model = get_model().float().to(device)
