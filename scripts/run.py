@@ -5,7 +5,7 @@ from models import get_model
 
 import numpy as np
 import argparse
-
+import wandb
 
 # train one epoch
 def train(train_loader, model, loss_fn, optimizer):
@@ -16,7 +16,6 @@ def train(train_loader, model, loss_fn, optimizer):
     for batch, (X, y) in enumerate(train_loader):
         X = X.to(device)
         y = y.to(device)
-
         # Compute prediction error
         pred = model(X)
         y = y.unsqueeze(1).float()
@@ -32,7 +31,7 @@ def train(train_loader, model, loss_fn, optimizer):
             loss, current = loss.item(), batch * len(X)
             print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
 
-
+        wandb.log({"loss_train":loss})
 # validate and return mae loss
 def validate(val_loader, model):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
@@ -56,6 +55,7 @@ def validate(val_loader, model):
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
+    wandb.log({"loss_val":loss})
 
     print(f"val mse loss: {val_loss_mse:>7f}, val mae loss: {val_loss_mae}")
     return val_loss_mae
@@ -85,6 +85,7 @@ def test(test_loader, model):
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
+    wandb.log({"loss_train":loss})
 
     print(f"test mse loss: {test_loss_mse:>7f}, test mae loss: {test_loss_mae}")
     return test_loss_mse, test_loss_mae
@@ -129,7 +130,7 @@ class EarlyStopping:
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-
+    wandb.init(project="face2bmi", config={"learning_rate":0.001, "architecture": Resnet, "dataset": testdataset100, "epochs": 1}
     parser = argparse.ArgumentParser()
     parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
     args = parser.parse_args()
@@ -153,6 +154,6 @@ if __name__ == "__main__":
 
     model.load_state_dict(torch.load('../weights/aug_epoch_7.pt'))
     test(test_loader, model)
-
+    wandb.finish
     print("Done!")
 
