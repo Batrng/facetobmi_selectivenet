@@ -194,6 +194,7 @@ def get_args():
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate for the optimizer')
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size for data loader')    
     parser.add_argument('--dataset', type=str, default=test, help='dataset') 
+    parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
     
     # Parse arguments
     return parser.parse_args()
