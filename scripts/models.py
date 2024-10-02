@@ -4,10 +4,14 @@ import torch.nn as nn
 from torchvision.models import vit_h_14, ViT_H_14_Weights
 from torchvision.models import resnet50, ResNet50_Weights
 
+import torch
+import torch.nn as nn
+from torchvision.models import vit_h_14, ViT_H_14_Weights
+
 class BMIHead(nn.Module):
     def __init__(self):
         super(BMIHead, self).__init__()
-        self.linear1 = nn.Linear(2048, 640)
+        self.linear1 = nn.Linear(1280, 640)
         self.linear2 = nn.Linear(640, 320)
         self.linear3 = nn.Linear(320, 160)
         self.linear4 = nn.Linear(160, 80)
@@ -24,6 +28,8 @@ class BMIHead(nn.Module):
         x = self.linear3(x)
         x = self.gelu(x)
         x = self.linear4(x)
+        x = self.gelu(x)
+        x = self.linear5(x)
         out = self.gelu(x)
         return out
 
@@ -35,8 +41,8 @@ def get_model():
     for param in model.parameters():
         param.requires_grad = True
 
-    #model = nn.Sequential(*list(model.children())[:-1])
-    model.fc = BMIHead()
+    heads = BMIHead()
+    model.heads = heads
 
     return model
 

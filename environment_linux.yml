@@ -1,4 +1,4 @@
-name: face2bmi
+name: selectiveface2bmi
 channels:
   - pytorch
   - nvidia
