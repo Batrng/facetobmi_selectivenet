@@ -193,7 +193,7 @@ def get_args():
     parser.add_argument('--epochs', type=int, default=10, help='Number of epochs to train')
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate for the optimizer')
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size for data loader')    
-    parser.add_argument('--dataset', type=int, default=test, help='dataset') 
+    parser.add_argument('--dataset', type=str, default=test, help='dataset') 
     
     # Parse arguments
     return parser.parse_args()
