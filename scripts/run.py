@@ -151,7 +151,7 @@ if __name__ == "__main__":
             print("Early stopping")
             break
 
-    model.load_state_dict(torch.load('../weights/checkpoint.pt'))
+    model.load_state_dict(torch.load('../weights/aug_epoch_7.pt'))
     test(test_loader, model)
 
     print("Done!")
