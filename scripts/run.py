@@ -195,6 +195,7 @@ def get_args():
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size for data loader')    
     parser.add_argument('--dataset', type=str, default=test, help='dataset') 
     parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
+    parser.add_argument('--wandbname', type=str, default="Test", help='for wandblogging')
     
     # Parse arguments
     return parser.parse_args()
@@ -203,7 +204,7 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    wandb.init(project="face2bmi", config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset})
+    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset})
     #parser = argparse.ArgumentParser()
     #parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
     #args = parser.parse_args()
