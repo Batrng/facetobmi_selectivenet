@@ -9,13 +9,12 @@ from models import get_model
 from selectiveLoss import SelectiveLoss
 from collections import OrderedDict
 from metric import MetricDict
+import wandb
 
 alpha = 0.5
 # train one epoch
 def train(train_loader, model, loss_fn, loss_selective, optimizer):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    correct = 0
-    total = 0
     true_positive = 0
     false_positive = 0
     mae_loss_fn = nn.L1Loss()
@@ -28,44 +27,48 @@ def train(train_loader, model, loss_fn, loss_selective, optimizer):
         # Compute prediction
         pred, pred_select, pred_aux = model(X)
         y = y.unsqueeze(1).float()
-        #loss_dict = OrderedDict()
         selective_loss = loss_selective(pred, pred_select, y)
         selective_loss *= alpha
-        #loss_dict['selective_loss'] = selective_loss.detach().cpu().item()
 
- 
+        #mae for pred
+        mae_loss = mae_loss_fn(pred, y).item() 
+        mse_loss = loss_fn(pred, y).item() 
+
+        #precision
+        true_positive += (pred * y).sum().item()  # TP: Both pred and actual are 1
+        false_positive += (pred * (1 - y)).sum().item()  # FP: Pred is 1, actual is 0
+
+        #aux loss
         ce_loss = loss_fn(pred_aux, y)
         ce_loss *= (1.0 - alpha)
-        #loss_dict['ce_loss'] = ce_loss.detach().item()
 
-        # total loss
+        #total loss
         loss = selective_loss + ce_loss
-        loss = loss.float() 
-        #loss_dict['loss'] = loss.detach().cpu().item()
-        #train_metric_dict = MetricDict()
-        #train_metric_dict.update(loss_dict)
+        loss = loss.float()
 
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
+        if (true_positive + false_positive) > 0:
+            precision = true_positive / (true_positive + false_positive)
+        else:
+            precision = 0  # Avoid division by zero
+
         # Show progress
-        if batch % 2 == 0:
-            loss, current = loss.item(), batch * len(X)
-            print(batch)
-            print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
+        wandb.log({"losstotal_train_mse":loss, "precision_train":precision, "loss_train_mae": mae_loss, "Loss_train_mse":mse_loss})
 
 
 # validate and return mae loss
 def validate(val_loader, model, loss_fn):
-    #val_metric_dict = MetricDict()
+    true_positive = 0
+    false_positive = 0
+    mae_loss_fn = nn.L1Loss()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Validation
     model.eval()
-    val_loss_mse = 0
-    val_loss_mae = 0
     with torch.no_grad():
         for batch_idx, (X, y) in enumerate(val_loader):
             X = X.to(device).float()
@@ -73,30 +76,29 @@ def validate(val_loader, model, loss_fn):
 
             pred, pred_select, pred_aux = model(X)
             y = y.unsqueeze(1)
-            #loss_dict_val = OrderedDict()
             selective_loss = loss_selective(pred, pred_select, y)
-            selective_loss *= alpha
-            ##loss_dict_val['selective_loss'] = selective_loss.detach().cpu().item()
+            selective_loss *= alpha #for total loss
             
+            #precision
+            true_positive += (pred * y).sum().item()  # TP: Both pred and actual are 1
+            false_positive += (pred * (1 - y)).sum().item()  # FP: Pred is 1, actual is 0
 
+            if (true_positive + false_positive) > 0:
+                precision = true_positive / (true_positive + false_positive)
+            else:
+                precision = 0  # Avoid division by zero
+            #mae/mse for pred
+            mae_loss = mae_loss_fn(pred, y).item() 
+            mse_loss = loss_fn(pred, y).item() 
+
+            #total loss prepare
             ce_loss = loss_fn(pred_aux, y)
             ce_loss *= (1.0 - alpha)
-           ## loss_dict_val['ce_loss'] = ce_loss.detach().item()
 
             # total loss
             loss = selective_loss + ce_loss
             loss = loss.float() 
-            ##loss_dict_val['loss'] = loss.detach().cpu().item()
-            #train_metric_dict = MetricDict()
-            #train_metric_dict.update(loss_dict_val)
-
-#loss_mse =nn.MSELoss(pred, y).float()
-#val_loss_mse += loss_mse.item()
-#loss_mae = nn.L1Loss()(pred, y)
-#val_loss_mae += loss_mae.item()
-
-#val_loss_mse /= len(val_loader)
-#val_loss_mae /= len(val_loader)
+            wandb.log({"losstotal_train_mse":loss, "precision_train":precision, "loss_train_mse":mse_loss, "loss_train_mae": mae_loss})
 
     print(f"val mse loss: {loss.item():>7f}")
     return loss #val_loss_mae
@@ -105,12 +107,13 @@ def validate(val_loader, model, loss_fn):
 
 # test and return mse and mae loss
 def test(test_loader, model, loss_fn):
+    true_positive = 0
+    false_positive = 0
+    mae_loss_fn = nn.L1Loss()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Test
     model.eval()
-    test_loss_mse = 0
-    test_loss_mae = 0
     with torch.no_grad():
         for batch_idx, (X, y) in enumerate(test_loader):
             X = X.to(device)
@@ -118,31 +121,28 @@ def test(test_loader, model, loss_fn):
 
             pred, pred_select, pred_aux = model(X)
             y = y.unsqueeze(1)
-            #loss_dict_test = OrderedDict()
-            selective_loss = loss_selective(pred, pred_select, y)
+            selective_loss = loss_selective(pred, pred_select, y, test=True)
             selective_loss *= alpha
-            #loss_dict_test['selective_loss'] = selective_loss.detach().cpu().item()
-            #y = y.unsqueeze(1)
+            #precision
+            true_positive += (pred * y).sum().item()  # TP: Both pred and actual are 1
+            false_positive += (pred * (1 - y)).sum().item()  # FP: Pred is 1, actual is 0
 
+            if (true_positive + false_positive) > 0:
+                precision = true_positive / (true_positive + false_positive)
+            else:
+                precision = 0  # Avoid division by zero
+            #mae/mse for pred
+            mae_loss = mae_loss_fn(pred, y).item() 
+            mse_loss = loss_fn(pred, y).item()
+            
+            #total loss prepare
             ce_loss = loss_fn(pred_aux, y)
             ce_loss *= (1.0 - alpha)
-            #loss_dict_test['ce_loss'] = ce_loss.detach().item()
 
-            # total loss
+            #total loss
             loss = selective_loss + ce_loss
             loss = loss.float() 
-            #loss_dict_test['loss'] = loss.detach().cpu().item()
-            #train_metric_dict = MetricDict()
-            #train_metric_dict.update(loss_dict_test)
-            """
-            loss_mse = nn.MSELoss()(pred, y)
-            test_loss_mse += loss_mse.item()
-            loss_mae = nn.L1Loss()(pred, y)
-            test_loss_mae += loss_mae.item()
-            """
-
-   # test_loss_mse /= len(test_loader)
-   # test_loss_mae /= len(test_loader)
+            wandb.log({"losstotal_test_mse":loss, "precision_test":precision, "loss_test_mse":mse_loss, "loss_test_mae": mae_loss})
 
     print(f"test mse loss: {loss.item():>7f}")
     return loss #test_loss_mse, test_loss_mae
@@ -183,16 +183,26 @@ class EarlyStopping:
         torch.save(model.state_dict(), '../weights/aug_epoch_8.pt')  # save checkpoint Bao
         self.val_loss_min = val_loss
 
-
+def get_args():
+    parser = argparse.ArgumentParser(description="Training script for a ResNet model.")
+    
+    # Add arguments
+    parser.add_argument('--epochs', type=int, default=10, help='Number of epochs to train')
+    parser.add_argument('--lr', type=float, default=0.001, help='Learning rate for the optimizer')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size for data loader')    
+    parser.add_argument('--dataset', type=str, default=test, help='dataset') 
+    parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
+    parser.add_argument('--wandbname', type=str, default="Test", help='for wandblogging')
+    
+    # Parse arguments
+    return parser.parse_args()
 
 if __name__ == "__main__":
+    args = get_args()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    print(device)
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
-    args = parser.parse_args()
+    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset})
 
-    train_loader, val_loader, test_loader = get_dataloaders(16, augmented=args.augmented, vit_transformed=True, show_sample=False)
+    train_loader, val_loader, test_loader = get_dataloaders(args.batch_size, augmented=args.augmented, vit_transformed=True, show_sample=False)
     
     # model for normal and selectivenet
     features = get_model().float().to(device)
@@ -202,7 +212,7 @@ if __name__ == "__main__":
 
     loss_fn = nn.MSELoss()
     loss_selective = SelectiveLoss(loss_fn, 0.7) #edit coverage
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), args.lr)
     epochs = 1
     early_stopping = EarlyStopping(patience=5, verbose=True)
 
