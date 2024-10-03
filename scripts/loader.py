@@ -53,11 +53,11 @@ augmentation_transforms = T.Compose([
 ])
 
 # transforms for vit
-vit_transforms = T.Compose([
-    T.Resize([518], interpolation=InterpolationMode.BICUBIC),
-    T.CenterCrop([518]),
+resnet_transforms = T.Compose([
+    T.Resize([256]),                      # Resize to 256x256 or 256 on the shorter side
+    T.CenterCrop([224]),                  # Crop to 224x224, the size ResNet expects
     T.Normalize(
-        mean=[0.485, 0.456, 0.406],
+        mean=[0.485, 0.456, 0.406],       # Normalization values for ResNet pre-trained on ImageNet
         std=[0.229, 0.224, 0.225]
     )
 ])
@@ -119,7 +119,7 @@ class AugmentedBMIDataset(Dataset):
 
 # the dataset transformed for vit inputs
 class VitTransformedDataset(Dataset):
-    def __init__(self, original_dataset, transforms=vit_transforms):
+    def __init__(self, original_dataset, transforms=resnet_transforms):
         self.original_dataset = original_dataset
         self.transforms = transforms
 
@@ -168,7 +168,7 @@ def train_val_test_split(dataset, augmented=True, vit_transformed=True):
 
 # get dataloaders
 def get_dataloaders(batch_size=16, augmented=True, vit_transformed=True, show_sample=False):
-    bmi_dataset = BMIDataset('/home/nguyenbt/nobackup/face-to-bmi-vit/data/data.csv', '/home/nguyenbt/nobackup/face-to-bmi-vit/data/Images/', 'bmi', ToTensor())
+    bmi_dataset = BMIDataset('/home/nguyenbt/nobackup/face-to-bmi-vit/data/data.csv', '/home/nguyenbt/nobackup/data/Illinois/', 'bmi', ToTensor())
     if show_sample:
         train_dataset, val_dataset, test_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
         #show_sample_image(train_dataset)
