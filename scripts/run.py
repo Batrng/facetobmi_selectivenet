@@ -14,6 +14,11 @@ alpha = 0.5
 # train one epoch
 def train(train_loader, model, loss_fn, loss_selective, optimizer):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+    correct = 0
+    total = 0
+    true_positive = 0
+    false_positive = 0
+    mae_loss_fn = nn.L1Loss()
     # Train
     model.train()
     for batch, (X, y) in enumerate(train_loader):
@@ -117,7 +122,7 @@ def test(test_loader, model, loss_fn):
             selective_loss = loss_selective(pred, pred_select, y)
             selective_loss *= alpha
             #loss_dict_test['selective_loss'] = selective_loss.detach().cpu().item()
-            y = y.unsqueeze(1)
+            #y = y.unsqueeze(1)
 
             ce_loss = loss_fn(pred_aux, y)
             ce_loss *= (1.0 - alpha)
