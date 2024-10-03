@@ -54,7 +54,7 @@ augmentation_transforms = T.Compose([
 
 # transforms for vit
 resnet_transforms = T.Compose([
-    T.Resize([256]),                      # Resize to 256x256 or 256 on the shorter side
+    T.Resize([256], interpolation=InterpolationMode.BICUBIC, antialias=True),                      # Resize to 256x256 or 256 on the shorter side
     T.CenterCrop([224]),                  # Crop to 224x224, the size ResNet expects
     T.Normalize(
         mean=[0.485, 0.456, 0.406],       # Normalization values for ResNet pre-trained on ImageNet
