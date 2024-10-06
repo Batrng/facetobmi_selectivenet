@@ -53,7 +53,7 @@ def train(train_loader, model, loss_fn, optimizer):
         #    loss, current = loss.item(), batch * len(X)
         #    print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
 
-        wandb.log({"loss_train_mse":loss, "precision_train":precision, "accuracy_train":accuracy, "loss_train_mae": mae_loss})
+        wandb.log({"loss_train_mse":loss, "precision_train":precision, "accuracy_train":accuracy, "loss_train_mae": mae_loss}, step=batch)
 # validate and return mae loss
 def validate(val_loader, model):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
@@ -90,7 +90,7 @@ def validate(val_loader, model):
                 precision = true_positive / (true_positive + false_positive)
             else:
                 precision = 0  # Avoid division by zero
-            wandb.log({"loss_val_mse":loss_mse, "precision_val":precision, "accuracy_val":accuracy, "loss_val_mae": loss_mae})
+            wandb.log({"loss_val_mse":loss_mse, "precision_val":precision, "accuracy_val":accuracy, "loss_val_mae": loss_mae}, step=batch)
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
@@ -136,12 +136,11 @@ def test(test_loader, model):
                 precision = true_positive / (true_positive + false_positive)
             else:
                 precision = 0  # Avoid division by zero
-            wandb.log({"loss_test_mse":loss_mse, "precision_test":precision, "accuracy_test":accuracy, "loss_test_mae": loss_mae})
+            wandb.log({"loss_test_mse":loss_mse, "precision_test":precision, "accuracy_test":accuracy, "loss_test_mae": loss_mae},step=batch)
 
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
-    wandb.log({"loss_train":test_loss_mse})
 
     #print(f"test mse loss: {test_loss_mse:>7f}, test mae loss: {test_loss_mae}")
     return test_loss_mse, test_loss_mae
@@ -200,7 +199,7 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset})
+    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset}, resume=False)
     #parser = argparse.ArgumentParser()
     #parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
     #args = parser.parse_args()
