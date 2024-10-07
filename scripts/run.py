@@ -90,7 +90,7 @@ def validate(val_loader, model):
                 precision = true_positive / (true_positive + false_positive)
             else:
                 precision = 0  # Avoid division by zero
-            wandb.log({"loss_val_mse":loss_mse, "precision_val":precision, "accuracy_val":accuracy, "loss_val_mae": loss_mae}, step=batch)
+            wandb.log({"loss_val_mse":loss_mse, "precision_val":precision, "accuracy_val":accuracy, "loss_val_mae": loss_mae}, step=batch_idx)
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
@@ -136,7 +136,7 @@ def test(test_loader, model):
                 precision = true_positive / (true_positive + false_positive)
             else:
                 precision = 0  # Avoid division by zero
-            wandb.log({"loss_test_mse":loss_mse, "precision_test":precision, "accuracy_test":accuracy, "loss_test_mae": loss_mae},step=batch)
+            wandb.log({"loss_test_mse":loss_mse, "precision_test":precision, "accuracy_test":accuracy, "loss_test_mae": loss_mae},step=batch_idx)
 
 
     test_loss_mse /= len(test_loader)
