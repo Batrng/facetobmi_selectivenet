@@ -57,7 +57,7 @@ def train(train_loader, model, loss_fn, loss_selective, optimizer):
             precision = 0  # Avoid division by zero
 
         # Show progress
-        wandb.log({"losstotal_train_mse":loss, "precision_train":precision, "loss_train_mae": mae_loss, "Loss_train_mse":mse_loss})
+        wandb.log({"losstotal_train_mse":loss, "precision_train":precision, "loss_train_mae": mae_loss, "Loss_train_mse":mse_loss},step=batch)
 
 
 # validate and return mae loss
@@ -98,7 +98,7 @@ def validate(val_loader, model, loss_fn):
             # total loss
             loss = selective_loss + ce_loss
             loss = loss.float() 
-            wandb.log({"losstotal_train_mse":loss, "precision_train":precision, "loss_train_mse":mse_loss, "loss_train_mae": mae_loss})
+            wandb.log({"losstotal_train_mse":loss, "precision_train":precision, "loss_train_mse":mse_loss, "loss_train_mae": mae_loss},step=batch_idx)
 
     print(f"val mse loss: {loss.item():>7f}")
     return loss #val_loss_mae
@@ -142,7 +142,7 @@ def test(test_loader, model, loss_fn):
             #total loss
             loss = selective_loss + ce_loss
             loss = loss.float() 
-            wandb.log({"losstotal_test_mse":loss, "precision_test":precision, "loss_test_mse":mse_loss, "loss_test_mae": mae_loss})
+            wandb.log({"losstotal_test_mse":loss, "precision_test":precision, "loss_test_mse":mse_loss, "loss_test_mae": mae_loss}, step=batch_idx)
 
     print(f"test mse loss: {loss.item():>7f}")
     return loss #test_loss_mse, test_loss_mae
