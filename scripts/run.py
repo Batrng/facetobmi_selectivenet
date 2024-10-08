@@ -9,6 +9,7 @@ import wandb
 
 # train one epoch
 def train(train_loader, model, loss_fn, optimizer):
+    wandb()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     correct = 0
     total = 0
@@ -54,8 +55,10 @@ def train(train_loader, model, loss_fn, optimizer):
         #    print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
 
         wandb.log({"loss_train_mse":loss, "precision_train":precision, "accuracy_train":accuracy, "loss_train_mae": mae_loss}, step=batch)
+        wandb.finish()
 # validate and return mae loss
 def validate(val_loader, model):
+    wandb()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Validation
@@ -94,6 +97,7 @@ def validate(val_loader, model):
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
+    wandb.finish()
     
 
     #print(f"val mse loss: {val_loss_mse:>7f}, val mae loss: {val_loss_mae}")
@@ -103,6 +107,7 @@ def validate(val_loader, model):
 
 # test and return mse and mae loss
 def test(test_loader, model):
+    wandb()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Test
@@ -141,6 +146,7 @@ def test(test_loader, model):
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
+    wandb.finish()
 
     #print(f"test mse loss: {test_loss_mse:>7f}, test mae loss: {test_loss_mae}")
     return test_loss_mse, test_loss_mae
@@ -195,14 +201,14 @@ def get_args():
     # Parse arguments
     return parser.parse_args()
 
+def wandb():
+    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset}, resume=False)
+
+
 
 if __name__ == "__main__":
     args = get_args()
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset}, resume=False)
-    #parser = argparse.ArgumentParser()
-    #parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
-    #args = parser.parse_args()
 
     train_loader, val_loader, test_loader = get_dataloaders(args.batch_size, augmented=args.augmented, vit_transformed=True, show_sample=True)
     model = get_model().float().to(device)
@@ -222,6 +228,6 @@ if __name__ == "__main__":
 
     model.load_state_dict(torch.load('/home/nguyenbt/nobackup/weights/aug_epoch_7.pt'))
     test(test_loader, model)
-    wandb.finish()
+    
     print("Done!")
 

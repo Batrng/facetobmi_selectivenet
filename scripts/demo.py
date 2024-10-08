@@ -8,7 +8,7 @@ import torch
 from torchvision.transforms import ToTensor
 
 from models import get_model
-from loader import vit_transforms
+from loader import resnet_transforms
 from SelectiveNet import SelectiveNet
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
@@ -21,7 +21,7 @@ def test_and_show(img_dir, weight_dir):
     if image.mode != 'RGB':
         image = image.convert('RGB')
     image = ToTensor()(image)
-    image_vit = vit_transforms(image)
+    image_vit = resnet_transforms(image)
     image_vit = image_vit.unsqueeze(0)
     image_vit = image_vit.to(device)
 
@@ -59,4 +59,4 @@ if __name__ == "__main__":
         #with TqdmUpTo(unit='B', unit_scale=True, miniters=1, desc=url.split('/')[-1]) as t:
         #    urllib.request.urlretrieve(url, weight_dir, reporthook=t.update_to)
 
-    pred = test_and_show('C:/Users/nguyen/TestProjects/selectivepred/facetobmi/face-to-bmi-vit/data/test_pic_rotate.jpg', 'C:/Users/nguyen/TestProjects/selectivepred/facetobmi/face-to-bmi-vit/weights/aug_epoch_8.pt')
+    pred = test_and_show('/home/nguyenbt/nobackup/face-to-bmi-vit/assets/test_pic_sample.jpg', '/home/nguyenbt/nobackup/weightsarchive/aug_epoch_7/data.pt')
