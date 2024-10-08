@@ -9,7 +9,7 @@ import wandb
 
 # train one epoch
 def train(train_loader, model, loss_fn, optimizer):
-    wandb()
+    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset}, resume=False)
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     correct = 0
     total = 0
@@ -58,7 +58,7 @@ def train(train_loader, model, loss_fn, optimizer):
         wandb.finish()
 # validate and return mae loss
 def validate(val_loader, model):
-    wandb()
+    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset}, resume=False)
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Validation
@@ -107,7 +107,7 @@ def validate(val_loader, model):
 
 # test and return mse and mae loss
 def test(test_loader, model):
-    wandb()
+    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset}, resume=False)
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Test
