@@ -23,7 +23,7 @@ def addpadding(image, image_id, target_size=(256, 256)):
 
     # Place the resized image on the canvas
     padded_image[y_offset:y_offset + new_size[1], x_offset:x_offset + new_size[0]] = resized_image
-    cv2.imwrite("/home/nguyenbt/nobackup/data/height/fullbody/"+image_id, padded_image)
+    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/fullbody/"+image_id, padded_image)
     
 
 def croppedBody(index):
@@ -45,7 +45,7 @@ def croppedBody(index):
     #actor_id = p["actor_id"][index].decode('latin1')
     pose = p["pose_2d"][index]
     #poseid = p["pose_id"][index]
-    img = mpimg.imread(image_id + '.jpg')
+    img = mpimg.imread("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/imdb_images/"+image_id + '.jpg')
     
     pose_n = pose.reshape(-1,3) * [img.shape[1], img.shape[0], 1]
 
@@ -78,7 +78,7 @@ def croppedBodywholeimgheight(index):
     min_y = np.min(0)
     max_y = np.max(pose_n[:,1][pose_n[:,1]!=0])
     img = img[int(min_y):int(max_y), int(min_x):int(max_x), :]
-    cv2.imwrite("/home/nguyenbt/nobackup/data/height/preface/" + image_id, img)
+    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface/" + image_id, img)
     #addpadding(img, pose_n)
     #plt.imshow(img)
     #plt.show()
