@@ -27,7 +27,7 @@ def addpadding(image, image_id, target_size=(256, 256)):
     
 
 def croppedBody(index):
-    p = pickle.load(open('train.pickle', 'rb'), encoding='latin1')
+    p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
     #n_items = p['height'].shape[0]
     #print('n_items, ', n_items)
     #print(p.keys()) 
@@ -112,6 +112,7 @@ if __name__ == "__main__":
     p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
     for i, img_id in enumerate(p["image_id"]):
         index = i
+        print(i)
         croppedBodywholeimgheight(i)
         croppedBody(i)
         
