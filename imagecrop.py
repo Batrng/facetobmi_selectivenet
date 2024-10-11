@@ -23,7 +23,7 @@ def addpadding(image, image_id, target_size=(256, 256)):
 
     # Place the resized image on the canvas
     padded_image[y_offset:y_offset + new_size[1], x_offset:x_offset + new_size[0]] = resized_image
-    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/fullbody/"+image_id, padded_image)
+    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/fullbody/" + image_id + ".jpg", padded_image)
     
 
 def croppedBody(index):
