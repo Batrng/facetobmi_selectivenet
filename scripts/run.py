@@ -55,7 +55,7 @@ def train(train_loader, model, loss_fn, optimizer):
         #    print(f"train loss: {loss:>7f} [{current:>5d}/{len(train_loader.dataset):>5d}]")
 
         wandb.log({"loss_train_mse":loss, "precision_train":precision, "accuracy_train":accuracy, "loss_train_mae": mae_loss}, step=batch)
-        wandb.finish()
+    wandb.finish()
 # validate and return mae loss
 def validate(val_loader, model):
     wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset}, resume=False)
@@ -200,10 +200,6 @@ def get_args():
     
     # Parse arguments
     return parser.parse_args()
-
-def wandb():
-    wandb.init(project=args.wandbname, config={"learning_rate":args.lr, "architecture": "Resnet", "dataset": "testdataset100", "epochs": args.epochs, "batch":args.batch_size, "dataset": args.dataset}, resume=False)
-
 
 
 if __name__ == "__main__":
