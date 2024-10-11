@@ -78,7 +78,7 @@ def croppedBodywholeimgheight(index):
     min_y = np.min(0)
     max_y = np.max(pose_n[:,1][pose_n[:,1]!=0])
     img = img[int(min_y):int(max_y), int(min_x):int(max_x), :]
-    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface/" + image_id, img)
+    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface/" + image_id + ".jpg", img)
     #addpadding(img, pose_n)
     #plt.imshow(img)
     #plt.show()
