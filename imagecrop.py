@@ -64,7 +64,7 @@ def croppedBody(index):
     #plt.show()
 
 def croppedBodywholeimgheight(index):
-    p = pickle.load(open('train.pickle', 'rb'), encoding='latin1')
+    p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
     #index=64758
     image_id = str(p["image_id"][index].decode('latin1'))
     pose = p["pose_2d"][index]
