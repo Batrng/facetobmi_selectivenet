@@ -68,7 +68,7 @@ def croppedBodywholeimgheight(index):
     #index=64758
     image_id = str(p["image_id"][index].decode('latin1'))
     pose = p["pose_2d"][index]
-    img = mpimg.imread(image_id + '.jpg')
+    img = mpimg.imread('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/imdb_images/' + image_id + '.jpg')
     
     pose_n = pose.reshape(-1,3) * [img.shape[1], img.shape[0], 1]
     #plt.scatter(pose_n[:,0], pose_n[:,1])
