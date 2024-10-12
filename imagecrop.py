@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import cv2 
 
-def addpadding(image, image_id, target_size=(256, 256)):
+def addpadding(image, image_id, folder, target_size=(256, 256)):
     # Get the original dimensions
     original_h, original_w = image.shape[:2]
 
@@ -24,7 +24,7 @@ def addpadding(image, image_id, target_size=(256, 256)):
     # Place the resized image on the canvas
     padded_image[y_offset:y_offset + new_size[1], x_offset:x_offset + new_size[0]] = resized_image
     img_bgr = cv2.cvtColor(padded_image, cv2.COLOR_RGB2BGR)
-    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/fullbody/" + image_id + ".jpg", img_bgr)
+    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/" + folder +"/" + image_id + ".jpg", img_bgr)
     
 
 def croppedBody(index):
@@ -64,7 +64,7 @@ def croppedBody(index):
     max_y = np.max(pose_n[:,1][pose_n[:,1]!=0])
     #print(min_x, max_x, min_y, max_y)
     img=img[int(min_y):int(max_y), int(min_x):int(max_x), :]
-    addpadding(img, image_id)
+    addpadding(img, image_id, "fullbody")
     #plt.imshow(addpadding(img, landmark_n))
     #plt.show()
 
@@ -119,7 +119,7 @@ def croppedFace(image_id):
         face_crop = img[y:y+h, x:x+w]
         break  # For demonstration, just use the first face found
     if len(faces)!=0:
-        addpadding(face_crop, image_id)
+        addpadding(face_crop, image_id, "face")
 
     # Display or save the cropped face
     #cv2.imshow("Cropped Face", face_crop)
