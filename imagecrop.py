@@ -46,7 +46,11 @@ def croppedBody(index):
     #actor_id = p["actor_id"][index].decode('latin1')
     pose = p["pose_2d"][index]
     #poseid = p["pose_id"][index]
-    img = mpimg.imread("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/imdb_images/"+image_id + '.jpg')
+    try:
+        img = mpimg.imread("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/imdb_images/"+image_id + '.jpg')
+    except Exception as e:
+            print(f"Error reading image {image_id}: {e}")
+            return  # Skip to the next image
     
     pose_n = pose.reshape(-1,3) * [img.shape[1], img.shape[0], 1]
 
@@ -69,7 +73,11 @@ def croppedBodywholeimgheight(index):
     #index=64758
     image_id = str(p["image_id"][index].decode('latin1'))
     pose = p["pose_2d"][index]
-    img = mpimg.imread('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/imdb_images/' + image_id + '.jpg')
+    try:
+        img = mpimg.imread('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/imdb_images/' + image_id + '.jpg')
+    except Exception as e:
+            print(f"Error reading image {image_id}: {e}")
+            return  # Skip to the next image
     
     pose_n = pose.reshape(-1,3) * [img.shape[1], img.shape[0], 1]
     #plt.scatter(pose_n[:,0], pose_n[:,1])
@@ -84,12 +92,13 @@ def croppedBodywholeimgheight(index):
     #addpadding(img, pose_n)
     #plt.imshow(img)
     #plt.show()
+    croppedFace(image_id)
     return image_id
 
 
 
 def croppedFace(image_id):
-    img = cv2.imread("/home/nguyenbt/nobackup/data/height/preface/" + image_id)
+    img = cv2.imread("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface/" + image_id + ".jpg")
 
     # Detect face using a face detection model (e.g., OpenCV Haar Cascade)
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -101,21 +110,24 @@ def croppedFace(image_id):
         face_crop = img[y:y+h, x:x+w]
         break  # For demonstration, just use the first face found
     
+    addpadding(face_crop, image_id)
     # Display or save the cropped face
-    cv2.imshow("Cropped Face", face_crop)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    #cv2.imshow("Cropped Face", face_crop)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
     #croppedBodywholeimgheight()
     #croppedFace()
     #croppedBody()
-    p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
+
+    p = pickle.load(open('C:/Users/nguyen/Downloads/train.pickle', 'rb'), encoding='latin1')
+    print(str(p["image_id"][0]))
     for i, img_id in enumerate(p["image_id"]):
         index = i
         print(i)
         croppedBodywholeimgheight(i)
-        croppedBody(i)
-        
+        croppedBody(i) 
+        #croppedFace(i)
 
