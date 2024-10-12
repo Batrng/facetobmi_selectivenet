@@ -92,6 +92,7 @@ def croppedBodywholeimgheight(index):
     #addpadding(img, pose_n)
     #plt.imshow(img)
     #plt.show()
+    print(image_id)
     croppedFace(image_id)
     return image_id
 
