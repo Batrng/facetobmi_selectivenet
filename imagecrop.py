@@ -103,11 +103,13 @@ def croppedFace(image_id):
 
     # Detect face using a face detection model (e.g., OpenCV Haar Cascade)
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    #profile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_profileface.xml')
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
     # Assuming you take the first detected face (you can find the one closest to the head joint)
     for (x, y, w, h) in faces:
+        print('hi')
         face_crop = img[y:y+h, x:x+w]
         break  # For demonstration, just use the first face found
     
