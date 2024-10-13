@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
     print(str(p["image_id"][0]))
-    for i, img_id in enumerate(p["image_id"]):
+    for i, img_id in enumerate(p["image_id"][38782:], start=38782):
         index = i
         print(i)
         croppedBodywholeimgheight(i)
