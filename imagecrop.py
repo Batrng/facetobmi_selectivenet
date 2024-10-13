@@ -97,7 +97,7 @@ def croppedBodywholeimgheight(index):
         img = img[int(min_y):int(max_y), int(min_x):int(max_x), :]
 
     #img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface/" + image_id + ".jpg", img_bgr)
+    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface/" + image_id + ".jpg")
     #addpadding(img, pose_n)
     #plt.imshow(img)
     #plt.show()
