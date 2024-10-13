@@ -86,7 +86,11 @@ def croppedBodywholeimgheight(index):
     max_x = np.max(pose_n[:,0][pose_n[:,0]!=0])
     min_y = np.min(0)
     max_y = np.max(pose_n[:,1][pose_n[:,1]!=0])
-    img = img[int(min_y):int(max_y), int(min_x):int(max_x), :]
+    if len(img.shape) == 2:  # Grayscale image (2D array)
+        img = img[int(min_y):int(max_y), int(min_x):int(max_x)]
+    elif len(img.shape) == 3:  # RGB image (3D array)
+        img = img[int(min_y):int(max_y), int(min_x):int(max_x), :]
+
     img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface/" + image_id + ".jpg", img_bgr)
     #addpadding(img, pose_n)
@@ -134,6 +138,7 @@ if __name__ == "__main__":
 
     p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
     print(str(p["image_id"][0]))
+    
     for i, img_id in enumerate(p["image_id"][38883:], start=38883):
         index = i
         print(i)
