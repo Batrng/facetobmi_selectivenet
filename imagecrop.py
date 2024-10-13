@@ -6,6 +6,8 @@ import cv2
 
 def addpadding(image, image_id, folder, target_size=(256, 256)):
     # Get the original dimensions
+    if len(resized_image.shape) == 2:  # grayscale image
+        resized_image = np.stack((resized_image,) * 3, axis=-1)
     original_h, original_w = image.shape[:2]
 
     # Calculate the scale factor
