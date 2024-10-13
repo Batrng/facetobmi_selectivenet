@@ -144,10 +144,10 @@ if __name__ == "__main__":
     print(str(p["image_id"][38782]))
     
     #for i, img_id in enumerate(p["image_id"][38781:], start=38781):
-    for i, img_id in enumerate(p["image_id"][38781:], start=38781):
+    for i, img_id in enumerate(p["image_id"]):
         index = i
         print(i)
         croppedBodywholeimgheight(i)
-        croppedBody(i) 
+        #croppedBody(i) 
         #croppedFace(i)
 
