@@ -63,7 +63,10 @@ def croppedBody(index):
     min_y = np.min(pose_n[:,1][pose_n[:,1]!=0])
     max_y = np.max(pose_n[:,1][pose_n[:,1]!=0])
     #print(min_x, max_x, min_y, max_y)
-    img=img[int(min_y):int(max_y), int(min_x):int(max_x), :]
+    if len(img.shape) == 2:  # Grayscale image (2D array)
+        img = img[int(min_y):int(max_y), int(min_x):int(max_x)]
+    elif len(img.shape) == 3:  # RGB image (3D array)
+        img = img[int(min_y):int(max_y), int(min_x):int(max_x), :]
     addpadding(img, image_id, "fullbody")
     #plt.imshow(addpadding(img, landmark_n))
     #plt.show()
@@ -119,7 +122,6 @@ def croppedFace(image_id):
 
          faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
     for (x, y, w, h) in faces:
-        print('hi')
         face_crop = img[y:y+h, x:x+w]
         break  # For demonstration, just use the first face found
     if len(faces)!=0:
@@ -139,7 +141,7 @@ if __name__ == "__main__":
     p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
     print(str(p["image_id"][0]))
     
-    for i, img_id in enumerate(p["image_id"][38883:], start=38883):
+    for i, img_id in enumerate(p["image_id"][38781:], start=38781):
         index = i
         print(i)
         croppedBodywholeimgheight(i)
