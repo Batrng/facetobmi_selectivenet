@@ -127,7 +127,7 @@ def croppedFace(image_id):
         face_crop = img[y:y+h, x:x+w]
         break  # For demonstration, just use the first face found
     if len(faces)!=0:
-        addpadding(face_crop, image_id, "face_val")
+        addpadding(face_crop, image_id, "face_test")
 
     # Display or save the cropped face
     #cv2.imshow("Cropped Face", face_crop)

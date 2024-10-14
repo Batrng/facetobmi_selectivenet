@@ -30,7 +30,7 @@ def addpadding(image, image_id, folder, target_size=(256, 256)):
     
 
 def croppedBody(index):
-    p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
+    p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/test.pickle', 'rb'), encoding='latin1')
     #n_items = p['height'].shape[0]
     #print('n_items, ', n_items)
     #print(p.keys()) 
@@ -69,12 +69,12 @@ def croppedBody(index):
         img = img[int(min_y):int(max_y), int(min_x):int(max_x)]
     elif len(img.shape) == 3:  # RGB image (3D array)
         img = img[int(min_y):int(max_y), int(min_x):int(max_x), :]
-    addpadding(img, image_id, "fullbody")
+    addpadding(img, image_id, "fullbody_test")
     #plt.imshow(addpadding(img, landmark_n))
     #plt.show()
 
 def croppedBodywholeimgheight(index):
-    p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
+    p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/test.pickle', 'rb'), encoding='latin1')
     #index=64758
     image_id = str(p["image_id"][index].decode('latin1'))
     pose = p["pose_2d"][index]
@@ -97,7 +97,7 @@ def croppedBodywholeimgheight(index):
         img = img[int(min_y):int(max_y), int(min_x):int(max_x), :]
 
     #img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface/" + image_id + ".jpg", img)
+    cv2.imwrite("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface_test/" + image_id + ".jpg", img)
     #addpadding(img, pose_n)
     #plt.imshow(img)
     #plt.show()
@@ -108,7 +108,7 @@ def croppedBodywholeimgheight(index):
 
 
 def croppedFace(image_id):
-    img = cv2.imread("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface/" + image_id + ".jpg")
+    img = cv2.imread("/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/preface_test/" + image_id + ".jpg")
 
     # Detect face using a face detection model (e.g., OpenCV Haar Cascade)
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -127,7 +127,7 @@ def croppedFace(image_id):
         face_crop = img[y:y+h, x:x+w]
         break  # For demonstration, just use the first face found
     if len(faces)!=0:
-        addpadding(face_crop, image_id, "face")
+        addpadding(face_crop, image_id, "face_test")
 
     # Display or save the cropped face
     #cv2.imshow("Cropped Face", face_crop)
@@ -140,11 +140,12 @@ if __name__ == "__main__":
     #croppedFace()
     #croppedBody()
 
-    p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/train.pickle', 'rb'), encoding='latin1')
-    print(str(p["image_id"][38782]))
+    p = pickle.load(open('/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/test.pickle', 'rb'), encoding='latin1')
+    print(str(p["image_id"][5000]))
+    
     
     #for i, img_id in enumerate(p["image_id"][38781:], start=38781):
-    for i, img_id in enumerate(p["image_id"][38781:], start=38781):
+    for i, img_id in enumerate(p["image_id"]):
         index = i
         print(i)
         croppedBodywholeimgheight(i)
