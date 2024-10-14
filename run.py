@@ -32,7 +32,7 @@ def train(train_loader, model, loss_fn, optimizer):
         optimizer.zero_grad()
         loss_mse.backward()
         optimizer.step()
-        wandb.log({"loss_train": loss_mse}, step=batch)
+        wandb.log({"loss_train": loss_mse})
     loss_mse /= len(train_loader)
     loss_mae /= len(train_loader)
 
@@ -59,7 +59,7 @@ def validate(val_loader, model):
             val_loss_mse += loss_mse.item()
             loss_mae = nn.L1Loss()(pred, y)
             val_loss_mae += loss_mae.item()
-            wandb.log({"loss_val": loss_mse}, step=batch_idx)
+            wandb.log({"loss_val": loss_mse})
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
@@ -90,7 +90,7 @@ def test(test_loader, model):
             test_loss_mse += loss_mse.item()
             loss_mae = nn.L1Loss()(pred, y)
             test_loss_mae += loss_mae.item()
-            wandb.log({"loss_val": test_loss_mse}, step=batch_idx_)
+            wandb.log({"loss_val": test_loss_mse})
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
