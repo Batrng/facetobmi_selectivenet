@@ -19,7 +19,7 @@ class BMIDataset(Dataset):
         #self.csv.reset_index(drop=True, inplace=True)
 
         self.y_col_name = y_col_name
-        #self.transform = transform
+        self.transform = transform
 
     def __len__(self):
         return len(self.csv)
@@ -38,8 +38,9 @@ class BMIDataset(Dataset):
             image_face = image_face.convert('RGB')
         y = self.csv.loc[idx, self.y_col_name]
 
-        #if self.transform:
-        #    image = self.transform(image)
+        if self.transform:
+            image_fullbody = self.transform(image_fullbody)
+            image_face = self.transform(image_face)
 
         return image_fullbody, image_face, y
 
