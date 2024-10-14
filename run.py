@@ -168,7 +168,8 @@ if __name__ == "__main__":
                 print("Early stopping")
                 break
 
-        model.load_state_dict(torch.load('/home/nguyenbt/nobackup/face-to-bmi-vit/weights/checkpoint.pt'))
+        #model.load_state_dict(torch.load('/home/nguyenbt/nobackup/face-to-bmi-vit/weights/checkpoint.pt'))
+        torch.save(model.state_dict(), '../weights/checkpoint.pt')
         test(test_loader, model)
         wandb.finish()
         #print("Done!")
