@@ -55,11 +55,11 @@ def validate(val_loader, model):
             pred = model(X_fullbody, X_face)
             y = y.unsqueeze(1)
 
-            loss_mse = nn.MSELoss()(pred, y)
-            val_loss_mse += loss_mse.item()
+            loss_mse_val = nn.MSELoss()(pred, y)
+            val_loss_mse += loss_mse_val.item()
             loss_mae = nn.L1Loss()(pred, y)
             val_loss_mae += loss_mae.item()
-            wandb.log({"loss_val": loss_mse})
+            wandb.log({"loss_val": loss_mse_val})
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
