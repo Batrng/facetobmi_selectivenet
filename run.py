@@ -90,7 +90,7 @@ def test(test_loader, model):
             test_loss_mse += loss_mse.item()
             loss_mae = nn.L1Loss()(pred, y)
             test_loss_mae += loss_mae.item()
-            wandb.log({"loss_val": test_loss_mse})
+            wandb.log({"loss_test": test_loss_mse})
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
