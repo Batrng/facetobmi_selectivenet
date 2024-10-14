@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
-    parser.add_argument('--batchsize', type=int, default=16, help='set to True to use augmented dataset')
+    parser.add_argument('--batchsize', type=int, default=8, help='set to True to use augmented dataset')
     parser.add_argument('--lr', type=float, default=0.001, help='set to True to use augmented dataset')
     parser.add_argument('--wandbproject', type=str, default="height", help='set to True to use augmented dataset')
     args = parser.parse_args()
