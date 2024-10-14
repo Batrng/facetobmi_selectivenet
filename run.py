@@ -32,7 +32,7 @@ def train(train_loader, model, loss_fn, optimizer):
         optimizer.zero_grad()
         loss_mse.backward()
         optimizer.step()
-        run.log({"loss_train": loss_mse}, step=batch)
+        wandb.log({"loss_train": loss_mse}, step=batch)
     loss_mse /= len(train_loader)
     loss_mae /= len(train_loader)
 
@@ -59,7 +59,7 @@ def validate(val_loader, model):
             val_loss_mse += loss_mse.item()
             loss_mae = nn.L1Loss()(pred, y)
             val_loss_mae += loss_mae.item()
-            run.log({"loss_val": loss_mse}, step=batch_idx)
+            wandb.log({"loss_val": loss_mse}, step=batch_idx)
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
@@ -90,7 +90,7 @@ def test(test_loader, model):
             test_loss_mse += loss_mse.item()
             loss_mae = nn.L1Loss()(pred, y)
             test_loss_mae += loss_mae.item()
-            run.log({"loss_val": test_loss_mse}, step=batch_idx_)
+            wandb.log({"loss_val": test_loss_mse}, step=batch_idx_)
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
@@ -152,22 +152,22 @@ if __name__ == "__main__":
     epochs = 1
     early_stopping = EarlyStopping(patience=5, verbose=True)
 
-    run = wandb.init(project=args.wandbproject)
-    config = run.config
-    config.lr = args.lr
-    run.watch(model)
-    for t in range(epochs):
-        print(f"Epoch {t + 1}\n-------------------------------")
-        train(train_loader, model, loss_fn, optimizer)
-        val_loss = validate(test_loader, model)
-        early_stopping(val_loss, model)
+    with wandb.init(project=args.wandbproject):
+        config = wandb.config
+        config.lr = args.lr
+        wandb.watch(model)
+        for t in range(epochs):
+            print(f"Epoch {t + 1}\n-------------------------------")
+            train(train_loader, model, loss_fn, optimizer)
+            val_loss = validate(test_loader, model)
+            early_stopping(val_loss, model)
 
-        if early_stopping.early_stop:
-            print("Early stopping")
-            break
+            if early_stopping.early_stop:
+                print("Early stopping")
+                break
 
-    model.load_state_dict(torch.load('../weights/checkpoint.pt'))
-    test(test_loader, model)
-    wandb.finish()
-    #print("Done!")
+        model.load_state_dict(torch.load('../weights/checkpoint.pt'))
+        test(test_loader, model)
+        wandb.finish()
+        #print("Done!")
 
