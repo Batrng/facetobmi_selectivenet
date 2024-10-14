@@ -37,6 +37,6 @@ def filter_csv_by_image_names(csv_file, image_column, folder_path, output_csv_fi
 
 
 # Call the function to filter the CSV
-filter_csv_by_image_names("../height.csv", 0, "/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_face", "height.csv")
+filter_csv_by_image_names("../height.csv", "image_id", "/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_face", "../height.csv")
 
 
