@@ -149,7 +149,7 @@ if __name__ == "__main__":
     model = HeightEstimationNet().to(device)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
-    epochs = 1
+    epochs = 2
     early_stopping = EarlyStopping(patience=5, verbose=True)
 
     with wandb.init(project=args.wandbproject):
