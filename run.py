@@ -153,7 +153,9 @@ if __name__ == "__main__":
     early_stopping = EarlyStopping(patience=5, verbose=True)
 
     with wandb.init(project=args.wandbproject):
+
         config = wandb.config
+        wandb.watch(model,nn.MSELoss(),log='all',log_freq=25)
         config.lr = args.lr
         wandb.watch(model)
         for t in range(epochs):
