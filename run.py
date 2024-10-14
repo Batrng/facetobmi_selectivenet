@@ -23,16 +23,16 @@ def train(train_loader, model, loss_fn, optimizer):
         # Compute prediction error
         pred = model(X_fullbody, X_face)
         y = y.unsqueeze(1).float()
-        loss_mse = nn.MSELoss()(pred, y)
+        loss_mse_train = nn.MSELoss()(pred, y)
         train_loss_mse += loss_mse.item()
         loss_mae = nn.L1Loss()(pred, y)
         train_loss_mae += loss_mae.item()
 
         # Backpropagation
         optimizer.zero_grad()
-        loss_mse.backward()
+        loss_mse_train.backward()
         optimizer.step()
-        wandb.log({"loss_train": loss_mse})
+        wandb.log({"loss_train": loss_mse_train})
     loss_mse /= len(train_loader)
     loss_mae /= len(train_loader)
 
@@ -90,7 +90,7 @@ def test(test_loader, model):
             test_loss_mse += loss_mse.item()
             loss_mae = nn.L1Loss()(pred, y)
             test_loss_mae += loss_mae.item()
-            wandb.log({"loss_test": test_loss_mse})
+            wandb.log({"loss_test": loss_mse})
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
