@@ -86,11 +86,11 @@ def test(test_loader, model):
             pred = model(X_fullbody, X_face)
             y = y.unsqueeze(1)
 
-            loss_mse = nn.MSELoss()(pred, y)
-            test_loss_mse += loss_mse.item()
+            loss_mse_test = nn.MSELoss()(pred, y)
+            test_loss_mse += loss_mse_test.item()
             loss_mae = nn.L1Loss()(pred, y)
             test_loss_mae += loss_mae.item()
-            wandb.log({"loss_test": loss_mse.item()})
+            wandb.log({"loss_test": loss_mse_test.item()})
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
@@ -168,7 +168,7 @@ if __name__ == "__main__":
                 print("Early stopping")
                 break
 
-        model.load_state_dict(torch.load('../weights/checkpoint.pt'))
+        model.load_state_dict(torch.load('/weights/checkpoint.pt'))
         test(test_loader, model)
         wandb.finish()
         #print("Done!")
