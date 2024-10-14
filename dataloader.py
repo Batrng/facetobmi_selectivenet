@@ -51,9 +51,9 @@ def get_dataloaders(batch_size=16, augmented=True, vit_transformed=True, show_sa
         #show_sample_image(train_dataset)
     train_dataset, val_dataset, test_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers= 4, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers= 4, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers= 4, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers= 2, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers= 2, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers= 2, shuffle=False)
     return train_loader, test_loader, val_loader
 
 def train_val_test_split(dataset, augmented=True, vit_transformed=True):
