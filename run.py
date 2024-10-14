@@ -24,7 +24,7 @@ def train(train_loader, model, loss_fn, optimizer):
         pred = model(X_fullbody, X_face)
         y = y.unsqueeze(1).float()
         loss_mse_train = nn.MSELoss()(pred, y)
-        train_loss_mse += loss_mse.item()
+        train_loss_mse += loss_mse_train.item()
         loss_mae = nn.L1Loss()(pred, y)
         train_loss_mae += loss_mae.item()
 
@@ -33,7 +33,7 @@ def train(train_loader, model, loss_fn, optimizer):
         loss_mse_train.backward()
         optimizer.step()
         wandb.log({"loss_train": loss_mse_train})
-    loss_mse /= len(train_loader)
+    loss_mse_train /= len(train_loader)
     loss_mae /= len(train_loader)
 
 
