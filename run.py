@@ -147,16 +147,17 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--augmented', type=bool, default=False, help='set to True to use augmented dataset')
-    parser.add_argument('--batchsize', type=int, default=5, help='set to True to use augmented dataset')
+    parser.add_argument('--batchsize', type=int, default=32, help='set to True to use augmented dataset')
     parser.add_argument('--lr', type=float, default=0.001, help='set to True to use augmented dataset')
     parser.add_argument('--wandbproject', type=str, default="height", help='set to True to use augmented dataset')
+    parser.add_argument('--epochs', type=int, default=5, help='set to True to use augmented dataset')
     args = parser.parse_args()
 
     train_loader, val_loader, test_loader = get_dataloaders(args.batchsize, augmented=args.augmented, vit_transformed=False, show_sample=False)
     model = HeightEstimationNet().to(device)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
-    epochs = 2
+    epochs = args.epochs
     early_stopping = EarlyStopping(patience=5, verbose=True)
 
     with wandb.init(project=args.wandbproject):
