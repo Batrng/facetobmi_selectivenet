@@ -10,6 +10,7 @@ import wandb
 
 # train one epoch
 def train(train_loader, model, loss_fn, optimizer):
+    
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     train_loss_mse = 0
     train_loss_mae = 0
@@ -40,12 +41,14 @@ def train(train_loader, model, loss_fn, optimizer):
 
 # validate and return mae loss
 def validate(val_loader, model):
+    wandb.define_metric("custom_step")
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Validation
     model.eval()
     val_loss_mse = 0
     val_loss_mae = 0
+    i=0
     with torch.no_grad():
         for batch_idx, (X_fullbody, X_face, y) in enumerate(val_loader):
             X_face = X_face.to(device)
@@ -59,7 +62,8 @@ def validate(val_loader, model):
             val_loss_mse += loss_mse_val.item()
             loss_mae = nn.L1Loss()(pred, y)
             val_loss_mae += loss_mae.item()
-            wandb.log({"loss_val": loss_mse_val.item()})
+            i+=1
+            wandb.log({"loss_val": loss_mse_val.item(), "custom_step": (batch_idx*5)+i })
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
@@ -155,6 +159,7 @@ if __name__ == "__main__":
     with wandb.init(project=args.wandbproject):
 
         config = wandb.config
+        wandb.define_metric("custom_step")
         wandb.watch(model,nn.MSELoss(),log='all',log_freq=25)
         config.lr = args.lr
         wandb.watch(model)
