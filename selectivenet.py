@@ -17,7 +17,7 @@ class SelectiveNet(torch.nn.Module):
         """
         super(SelectiveNet, self).__init__()
         self.features = features
-        self.dim_features = dim_features #512 for final output layer
+        #self.dim_features = dim_features #512 for final output layer
 
         # represented as f()
         self.bmi_final_layer = nn.Linear(512, 1) 
