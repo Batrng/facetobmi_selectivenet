@@ -14,6 +14,7 @@ def train(train_loader, model, loss_fn, optimizer):
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     train_loss_mse = 0
     train_loss_mae = 0
+    train_counter = 0
     # Train
     model.train()
     for batch, (X_fullbody, X_face, y) in enumerate(train_loader):
@@ -33,7 +34,8 @@ def train(train_loader, model, loss_fn, optimizer):
         optimizer.zero_grad()
         loss_mse_train.backward()
         optimizer.step()
-        wandb.log({"loss_train": loss_mse_train.item()})
+        train_counter += 1
+        wandb.log({"loss_train": loss_mse_train.item(), "train_log_cnt": train_counter})
     loss_mse_train /= len(train_loader)
     loss_mae /= len(train_loader)
 
@@ -41,14 +43,13 @@ def train(train_loader, model, loss_fn, optimizer):
 
 # validate and return mae loss
 def validate(val_loader, model):
-    wandb.define_metric("custom_step")
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
     # Validation
     model.eval()
     val_loss_mse = 0
     val_loss_mae = 0
-    i=0
+    val_counter = 0
     with torch.no_grad():
         for batch_idx, (X_fullbody, X_face, y) in enumerate(val_loader):
             X_face = X_face.to(device)
@@ -62,8 +63,8 @@ def validate(val_loader, model):
             val_loss_mse += loss_mse_val.item()
             loss_mae = nn.L1Loss()(pred, y)
             val_loss_mae += loss_mae.item()
-            i+=1
-            wandb.log({"loss_val": loss_mse_val.item(), "custom_step": (batch_idx*5)+i })
+            val_counter += 1
+            wandb.log({"loss_val": loss_mse_val.item(), "val_log_cnt": val_counter})
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
@@ -81,6 +82,7 @@ def test(test_loader, model):
     model.eval()
     test_loss_mse = 0
     test_loss_mae = 0
+    test_counter = 0
     with torch.no_grad():
         for batch_idx_, (X_face, X_fullbody, y) in enumerate(test_loader):
             X_face = X_face.to(device)
@@ -94,7 +96,8 @@ def test(test_loader, model):
             test_loss_mse += loss_mse_test.item()
             loss_mae = nn.L1Loss()(pred, y)
             test_loss_mae += loss_mae.item()
-            wandb.log({"loss_test": loss_mse_test.item()})
+            test_counter +=1
+            wandb.log({"loss_test": loss_mse_test.item(), "test_log_cnt": test_counter})
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
