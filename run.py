@@ -214,7 +214,7 @@ if __name__ == "__main__":
         #wandb.watch(model)
         for t in range(epochs):
             print(f"Epoch {t + 1}\n-------------------------------")
-            train(train_loader,features, model, loss_selective, optimizer)
+            train(train_loader, model, loss_selective, optimizer)
             val_loss = validate(test_loader, model, loss_selective)
             early_stopping(val_loss, model)
 
