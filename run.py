@@ -164,9 +164,9 @@ if __name__ == "__main__":
 
         config = wandb.config
         wandb.define_metric("custom_step")
-        wandb.watch(model,nn.MSELoss(),log='all',log_freq=1
+        wandb.watch(model,nn.MSELoss(),log='all',log_freq=1)
         config.lr = args.lr
-        wandb.watch(model)
+        #wandb.watch(model)
         for t in range(epochs):
             print(f"Epoch {t + 1}\n-------------------------------")
             train(train_loader, model, loss_fn, optimizer)
