@@ -4,6 +4,7 @@ from dataloader import get_dataloaders
 from model import HeightEstimationNet
 from selectiveloss import SelectiveLoss
 import numpy as np
+from selectivenet import SelectiveNet
 import argparse
 import wandb
 
@@ -197,7 +198,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     train_loader, val_loader, test_loader = get_dataloaders(args.batchsize, augmented=args.augmented, vit_transformed=False, show_sample=False)
-    model = HeightEstimationNet().to(device)
+    features = HeightEstimationNet().to(device)
+    model = SelectiveNet(features=features)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
     epochs = args.epochs

@@ -8,7 +8,7 @@ class SelectiveNet(torch.nn.Module):
     SelectiveNet for classification with rejection option.
     In the experiments of original papaer, variant of VGG-16 is used as body block for feature extraction.  
     """
-    def __init__(self, features, dim_features:int):
+    def __init__(self, features):
         """
         Args
             features: feature extractor network (called body block in the paper).
