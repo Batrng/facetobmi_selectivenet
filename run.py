@@ -10,7 +10,7 @@ import wandb
 
 alpha = 0.5
 # train one epoch
-def train(train_loader, features, model, loss_selective, optimizer):
+def train(train_loader, model, loss_selective, optimizer):
     
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     train_loss_mse = 0
@@ -24,7 +24,7 @@ def train(train_loader, features, model, loss_selective, optimizer):
         y = y.to(device)
 
         # Compute prediction error
-        pred, pred_select, pred_aux  = model(features(X_fullbody, X_face))
+        pred, pred_select, pred_aux  = model(X_fullbody, X_face)
         y = y.unsqueeze(1).float()
         selective_loss = loss_selective(pred, pred_select, y)
         selective_loss *= alpha
@@ -199,7 +199,7 @@ if __name__ == "__main__":
 
     train_loader, val_loader, test_loader = get_dataloaders(args.batchsize, augmented=args.augmented, vit_transformed=False, show_sample=False)
     features = HeightEstimationNet().to(device)
-    model = SelectiveNet().to(device)
+    model = SelectiveNet(features).to(device)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
     epochs = args.epochs
