@@ -3,11 +3,13 @@ import pandas as pd
 from PIL import Image
 from matplotlib import pyplot as plt
 from torch.utils.data import random_split
+from torchvision import transforms as T
+from torchvision.transforms.functional import adjust_contrast, adjust_brightness
 
 import torch
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
-from torchvision.transforms import ToTensor
+from torchvision.transforms import ToTensor, InterpolationMode
 class BMIDataset(Dataset):
     def __init__(self, csv_path, image_folder_fullbody, image_folder_face, y_col_name, transform=None):
         self.csv = pd.read_csv(csv_path)
@@ -43,6 +45,59 @@ class BMIDataset(Dataset):
             image_face = self.transform(image_face)
 
         return image_fullbody, image_face, y
+    
+class AugmentedBMIDataset(Dataset):
+    def __init__(self, original_dataset, transforms=None):
+        self.original_dataset = original_dataset
+        self.transforms = transforms
+
+    def __len__(self):
+        return 5 * len(self.original_dataset)
+
+    def __getitem__(self, idx):
+        image_fullbody, image_face, y = self.original_dataset[idx // 5]
+
+        if self.transforms and (idx % 5 != 0):
+            image_fullbody = self.transforms(image_fullbody)
+            image_face = self.transforms(image_face)
+        return image_fullbody, image_face, y
+
+class RandomDistortion(torch.nn.Module):
+    def __init__(self, probability=0.25, grid_width=2, grid_height=2, magnitude=8):
+        super().__init__()
+        self.probability = probability
+        self.grid_width = grid_width
+        self.grid_height = grid_height
+        self.magnitude = magnitude
+
+    def forward(self, img):
+        if torch.rand(1).item() < self.probability:
+            return T.functional.affine(img, 0, [0, 0], 1, [self.magnitude, self.magnitude], interpolation=T.InterpolationMode.NEAREST, fill=[0, 0, 0])
+        else:
+            return img
+
+class RandomAdjustContrast(torch.nn.Module):
+    def __init__(self, probability=.5, min_factor=0.8, max_factor=1.2):
+        super().__init__()
+        self.probability = probability
+        self.min_factor = min_factor
+        self.max_factor = max_factor
+
+    def forward(self, img):
+        if torch.rand(1).item() < self.probability:
+            factor = torch.rand(1).item() * (self.max_factor - self.min_factor) + self.min_factor
+            return adjust_contrast(img, factor)
+        else:
+            return img
+
+augmentation_transforms = T.Compose([
+    T.RandomRotation(5),
+    T.RandomHorizontalFlip(p=0.5),
+    RandomDistortion(probability=0.25, grid_width=2, grid_height=2, magnitude=8),
+    T.RandomApply([T.ColorJitter(brightness=(0.5, 1.5), contrast=(0.8, 1.2), saturation=(0.8, 1.2), hue=(0.0, 0.1))], p=1),
+    RandomAdjustContrast(probability=0.5, min_factor=0.8, max_factor=1.2),
+    T.Lambda(lambda img: adjust_brightness(img, torch.rand(1).item() + 0.5))
+])
 
 def get_dataloaders(batch_size=16, augmented=True, vit_transformed=True, show_sample=False):
     bmi_dataset = BMIDataset('/home/nguyenbt/nobackup/face-to-bmi-vit/height.csv', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody/', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_face/', 'height', ToTensor())
@@ -63,8 +118,8 @@ def train_val_test_split(dataset, augmented=True, vit_transformed=True):
 
     train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
 
-    #if augmented:
-    #    train_dataset = AugmentedBMIDataset(train_dataset, augmentation_transforms)
+    if augmented:
+        train_dataset = AugmentedBMIDataset(train_dataset, augmentation_transforms)
 
     #if vit_transformed:
     #    train_dataset = VitTransformedDataset(train_dataset)
