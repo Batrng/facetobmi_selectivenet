@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
     train_loader, val_loader, test_loader = get_dataloaders(args.batchsize, augmented=args.augmented, vit_transformed=False, show_sample=False)
     features = HeightEstimationNet().to(device)
-    model = SelectiveNet(features=features)
+    model = SelectiveNet(features=features).to(device)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
     epochs = args.epochs
