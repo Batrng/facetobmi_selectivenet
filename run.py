@@ -10,7 +10,7 @@ import wandb
 
 alpha = 0.5
 # train one epoch
-def train(train_loader, model, loss_selective, optimizer):
+def train(train_loader, features, model, loss_selective, optimizer):
     
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     train_loss_mse = 0
@@ -24,16 +24,17 @@ def train(train_loader, model, loss_selective, optimizer):
         y = y.to(device)
 
         # Compute prediction error
-        pred, pred_select, pred_aux  = model(X_fullbody, X_face)
+        pred, pred_select, pred_aux  = model(features(body_crop=X_fullbody, face_crop=X_face))
         y = y.unsqueeze(1).float()
-        selective_loss = loss_selective(pred, pred_select, y)
+        selective_loss = loss_selective(pred, pred_select, y, train=True)
         selective_loss *= alpha
 
         # MSE MAE
         loss_mse_train = nn.MSELoss()(pred, y)
-        train_loss_mse += loss_mse_train.item()
+        #train_loss_mse += loss_mse_train.item()
         loss_mae = nn.L1Loss()(pred, y)
-        train_loss_mae += loss_mae.item()
+        #train_loss_mae += loss_mae.item()
+
 
         #aux loss
         ce_loss = nn.MSELoss()(pred_aux, y)
@@ -48,9 +49,9 @@ def train(train_loader, model, loss_selective, optimizer):
         loss_total_train.backward()
         optimizer.step()
         train_counter += 1
-        wandb.log({"loss_train": loss_total_train.item(), "train_log_cnt": train_counter})
-    loss_mse_train /= len(train_loader)
-    loss_mae /= len(train_loader)
+        wandb.log({"loss_mse_train": loss_total_train.item(), "train_log_cnt": train_counter, "loss_mae_train": loss_mae, "loss_mse_train": loss_mse_train})
+    #loss_mse_train /= len(train_loader)
+    #loss_mae /= len(train_loader)
 
 
 
@@ -72,7 +73,7 @@ def validate(val_loader, model, loss_selective):
             # Compute prediction error
             pred, pred_select, pred_aux  = model(X_fullbody, X_face)
             y = y.unsqueeze(1).float()
-            selective_loss = loss_selective(pred, pred_select, y)
+            selective_loss = loss_selective(pred, pred_select, y, val=True)
             selective_loss *= alpha
 
             pred, pred_select, pred_aux = model(X_fullbody, X_face)
@@ -80,9 +81,9 @@ def validate(val_loader, model, loss_selective):
 
             # MSE MAE
             loss_mse_val = nn.MSELoss()(pred, y)
-            val_loss_mse += loss_mse_val.item()
+            #val_loss_mse += loss_mse_val.item()
             loss_mae = nn.L1Loss()(pred, y)
-            val_loss_mae += loss_mae.item()
+            #val_loss_mae += loss_mae.item()
             val_counter += 1
 
             #aux loss
@@ -92,10 +93,10 @@ def validate(val_loader, model, loss_selective):
             #total loss
             loss_total_val = selective_loss + ce_loss
             loss_total_val = loss_total_val.float()
-            wandb.log({"loss_val": loss_total_val.item(), "val_log_cnt": val_counter})
+            wandb.log({"loss_val": loss_total_val.item(), "val_log_cnt": val_counter, "loss_mae_val": loss_mae, "loss_mse_val": loss_mse_val})
 
-    val_loss_mse /= len(val_loader)
-    val_loss_mae /= len(val_loader)
+    #val_loss_mse /= len(val_loader)
+    #val_loss_mae /= len(val_loader)
 
 
     return val_loss_mae
@@ -123,14 +124,14 @@ def test(test_loader, model, loss_selective):
             # Compute prediction error
             pred, pred_select, pred_aux  = model(X_fullbody, X_face)
             y = y.unsqueeze(1).float()
-            selective_loss = loss_selective(pred, pred_select, y)
+            selective_loss = loss_selective(pred, pred_select, y, test=True)
             selective_loss *= alpha
 
             #MSE MAE
             loss_mse_test = nn.MSELoss()(pred, y)
-            test_loss_mse += loss_mse_test.item()
+            #test_loss_mse += loss_mse_test.item()
             loss_mae = nn.L1Loss()(pred, y)
-            test_loss_mae += loss_mae.item()
+            #test_loss_mae += loss_mae.item()
             test_counter +=1
 
             #aux loss
@@ -141,10 +142,10 @@ def test(test_loader, model, loss_selective):
             loss_total_test = selective_loss + ce_loss
             loss_total_test = loss_total_test.float()
 
-            wandb.log({"loss_test": loss_total_test.item(), "test_log_cnt": test_counter})
+            wandb.log({"loss_test": loss_total_test.item(), "test_log_cnt": test_counter, "loss_mae_test": loss_mae, "loss_mse_test": loss_mse_test})
 
-    test_loss_mse /= len(test_loader)
-    test_loss_mae /= len(test_loader)
+    #test_loss_mse /= len(test_loader)
+    #test_loss_mae /= len(test_loader)
 
     return test_loss_mse, test_loss_mae
 
@@ -199,7 +200,7 @@ if __name__ == "__main__":
 
     train_loader, val_loader, test_loader = get_dataloaders(args.batchsize, augmented=args.augmented, vit_transformed=False, show_sample=False)
     features = HeightEstimationNet().to(device)
-    model = SelectiveNet(features).to(device)
+    model = SelectiveNet(features=features)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
     epochs = args.epochs
@@ -214,9 +215,9 @@ if __name__ == "__main__":
         #wandb.watch(model)
         for t in range(epochs):
             print(f"Epoch {t + 1}\n-------------------------------")
-            train(train_loader, model, loss_selective, optimizer)
+            train(train_loader, features, model, loss_selective, optimizer)
             val_loss = validate(test_loader, model, loss_selective)
-            early_stopping(val_loss, model)
+            early_stopping(val_loss, features)
 
             if early_stopping.early_stop:
                 print("Early stopping")
