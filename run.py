@@ -24,7 +24,7 @@ def train(train_loader, features, model, loss_selective, optimizer):
         y = y.to(device)
 
         # Compute prediction error
-        pred, pred_select, pred_aux  = model(features(body_crop=X_fullbody, face_crop=X_face))
+        pred, pred_select, pred_aux  = model(body_crop=X_fullbody, face_crop=X_face)
         y = y.unsqueeze(1).float()
         selective_loss = loss_selective(pred, pred_select, y, train=True)
         selective_loss *= alpha
