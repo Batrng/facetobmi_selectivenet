@@ -19,7 +19,7 @@ class SelectiveLoss(torch.nn.Module):
         self.coverage = coverage
         self.lm = lm
 
-    def forward(self, prediction_out, selection_out, target, test=False):
+    def forward(self, prediction_out, selection_out, target, train=False, val=False, test=False):
         """
         Args:
             prediction_out: (B,num_classes)
@@ -39,6 +39,10 @@ class SelectiveLoss(torch.nn.Module):
 
         selective_loss = empirical_risk + penulty
 
+        if (train):
+           wandb.log({"train/empirical coverage":empirical_coverage, "train_selectiveloss":selective_loss, "train-empirical_risk": empirical_risk})
+        if (val):
+           wandb.log({"val/empirical coverage":empirical_coverage, "val_selectiveloss":selective_loss, "val-empirical_risk": empirical_risk})
         if (test):
            wandb.log({"test/empirical coverage":empirical_coverage, "test_selectiveloss":selective_loss, "test-empirical_risk": empirical_risk})
 
