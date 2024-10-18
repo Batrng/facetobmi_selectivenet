@@ -205,7 +205,7 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
     epochs = args.epochs
     early_stopping = EarlyStopping(patience=5, verbose=True)
-    loss_selective = SelectiveLoss(loss_fn, 0.7) #edit coverage
+    loss_selective = SelectiveLoss(loss_fn, 0.8) #edit coverage
     with wandb.init(project=args.wandbproject):
 
         config = wandb.config
