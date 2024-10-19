@@ -87,6 +87,7 @@ class SelectiveLoss(torch.nn.Module):
         """
         g = (selection_out.squeeze(-1) > 0.5).float()
         prediction_out = prediction_out.squeeze(-1)
+        print(prediction_out)
         num = torch.dot(g, (torch.argmax(prediction_out, dim=-1) == target).float())
         return num / torch.sum(g)
 
