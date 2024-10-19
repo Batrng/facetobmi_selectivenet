@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from dataloader import get_dataloaders
+from dataloader import get_dataloaders, AugmentedBMIDataset
 from model import HeightEstimationNet
 from selectiveloss import SelectiveLoss
 import numpy as np
@@ -141,7 +141,7 @@ def test(test_loader, model, loss_selective):
             #total loss
             loss_total_test = selective_loss + ce_loss
             loss_total_test = loss_total_test.float()
-
+    
             wandb.log({"loss_test": loss_total_test.item(), "test_log_cnt": test_counter, "loss_mae_test": loss_mae, "loss_mse_test": loss_mse_test})
 
     #test_loss_mse /= len(test_loader)

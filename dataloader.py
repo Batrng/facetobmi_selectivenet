@@ -65,6 +65,9 @@ class AugmentedBMIDataset(Dataset):
             image_face = self.transforms(image_face)
 
         return image_fullbody, image_face, y
+    
+    def get_image_name(self, idx):
+        return self.image_paths[idx]
     '''
 class AugmentedBMIDataset(Dataset):
     def __init__(self, original_dataset, transforms=None):
