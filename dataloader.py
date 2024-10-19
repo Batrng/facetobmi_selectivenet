@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import random
 from PIL import Image
 from matplotlib import pyplot as plt
 from torch.utils.data import random_split
@@ -45,7 +46,26 @@ class BMIDataset(Dataset):
             image_face = self.transform(image_face)
 
         return image_fullbody, image_face, y
-    
+
+class AugmentedBMIDataset(Dataset):
+    def __init__(self, original_dataset, transforms=None):
+        self.original_dataset = original_dataset
+        self.transforms = transforms
+
+    def __len__(self):
+        return len(self.original_dataset)  # No multiplication
+
+    def __getitem__(self, idx):
+        # Get the original images and target
+        image_fullbody, image_face, y = self.original_dataset[idx]
+
+        # Apply transformations with a probability
+        if self.transforms and random.random() > 0.5:  # 50% chance to apply transformations
+            image_fullbody = self.transforms(image_fullbody)
+            image_face = self.transforms(image_face)
+
+        return image_fullbody, image_face, y
+    '''
 class AugmentedBMIDataset(Dataset):
     def __init__(self, original_dataset, transforms=None):
         self.original_dataset = original_dataset
@@ -61,7 +81,7 @@ class AugmentedBMIDataset(Dataset):
             image_fullbody = self.transforms(image_fullbody)
             image_face = self.transforms(image_face)
         return image_fullbody, image_face, y
-
+'''
 class RandomDistortion(torch.nn.Module):
     def __init__(self, probability=0.25, grid_width=2, grid_height=2, magnitude=8):
         super().__init__()

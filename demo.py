@@ -67,5 +67,5 @@ if __name__ == "__main__":
         with TqdmUpTo(unit='B', unit_scale=True, miniters=1, desc=url.split('/')[-1]) as t:
             urllib.request.urlretrieve(url, weight_dir, reporthook=t.update_to)
     '''
-    pred = test_and_show('C:/Users/nguyen/slurmgit/facetobmi_selectivenet-regression/rm999862784_fullbody.jpg', 'C:/Users/nguyen/slurmgit/facetobmi_selectivenet-regression/rm999862784.jpg', 'C:/Users/nguyen/slurmgit/facetobmi_selectivenet-regression/weights/checkpoint_selective_divine-dawn14.pt')
+    pred = test_and_show('C:/Users/nguyen/slurmgit/facetobmi_selectivenet-regression/rm999862784_fullbody.jpg', 'C:/Users/nguyen/slurmgit/facetobmi_selectivenet-regression/rm999862784.jpg', 'C:/Users/nguyen/slurmgit/facetobmi_selectivenet-regression/weights/checkpoint_selective_happy-serenity20.pt')
     print(f'Predicted Heigth and Uncertainty estimation: {pred}')
