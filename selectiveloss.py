@@ -87,7 +87,7 @@ class SelectiveLoss(torch.nn.Module):
         """
         g = (selection_out.squeeze(-1) > 0.5).float()
         prediction_out = prediction_out.squeeze(-1)
-        target = target.squeeze(-1)
+        #target = target.squeeze(-1)
         print(target)
 
         accuracy = (torch.abs(prediction_out - target) < 0.1).float()

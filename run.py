@@ -25,7 +25,7 @@ def train(train_loader, features, model, loss_selective, optimizer):
 
         # Compute prediction error
         pred, pred_select, pred_aux  = model(X_fullbody, X_face)
-        y = y.unsqueeze(1).float()
+        #y = y.unsqueeze(1).float()
         selective_loss = loss_selective(pred, pred_select, y, pred_aux, train=True)
         selective_loss *= alpha
 
@@ -72,12 +72,12 @@ def validate(val_loader, model, loss_selective):
 
             # Compute prediction error
             pred, pred_select, pred_aux  = model(X_fullbody, X_face)
-            y = y.unsqueeze(1).float()
+            #y = y.squeeze(1).float()
             selective_loss = loss_selective(pred, pred_select, y, pred_aux,val=True)
             selective_loss *= alpha
 
             pred, pred_select, pred_aux = model(X_fullbody, X_face)
-            y = y.unsqueeze(1)
+            #y = y.unsqueeze(1)
 
             # MSE MAE
             loss_mse_val = nn.MSELoss()(pred, y)
