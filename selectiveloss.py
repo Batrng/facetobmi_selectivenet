@@ -90,7 +90,7 @@ class SelectiveLoss(torch.nn.Module):
         #target = target.squeeze(-1)
         print(target)
 
-        accuracy = (torch.abs(prediction_out - target) < 0.1).float()
+        accuracy = (torch.abs(prediction_out - target) < 0.02).float()
         num = torch.dot(g, accuracy)
         return num / torch.sum(g)
 
@@ -111,7 +111,9 @@ class SelectiveLoss(torch.nn.Module):
         Args:
             selection_out:  (B, 1)
         """ 
-        num = torch.sum((torch.argmax(auxiliary_out, dim=-1) == target).float())
+        #num = torch.sum((torch.argmax(auxiliary_out, dim=-1) == target).float())
+        accuracy = (torch.abs(auxiliary_out - target) < 0.02).float()
+        num = torch.dot(g, accuracy)
         return num / len(auxiliary_out)
     
     # based on source implementation
