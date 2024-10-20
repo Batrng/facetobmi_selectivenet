@@ -125,7 +125,7 @@ def test(test_loader, model, loss_selective):
             y = y.float()
             # Compute prediction error
             pred, pred_select, pred_aux  = model(X_fullbody, X_face)
-            y = y.unsqueeze(1).float()
+            #y = y.unsqueeze(1).float()
             selective_loss = loss_selective(pred, pred_select, y, pred_aux, test=True)
             selective_loss *= alpha
 
