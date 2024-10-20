@@ -123,7 +123,7 @@ augmentation_transforms = T.Compose([
 ])
 
 def get_dataloaders(batch_size=16, augmented=True, vit_transformed=True, show_sample=False):
-    bmi_dataset = BMIDataset('/home/nguyenbt/nobackup/face-to-bmi-vit/archive/height_prerun.csv', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_prerun/', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_face_prerun', 'height', ToTensor())
+    bmi_dataset = BMIDataset('/home/nguyenbt/nobackup/face-to-bmi-vit/height.csv', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody/', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_face', 'height', ToTensor())
     if show_sample:
         train_dataset, val_dataset, test_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
         #show_sample_image(train_dataset)
