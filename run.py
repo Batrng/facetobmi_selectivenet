@@ -121,8 +121,8 @@ def test(test_loader, model, loss_selective):
             y = y.to(device)
 
             pred, pred_select, pred_aux = model(X_fullbody, X_face)
-            y = y.unsqueeze(1)
-
+            #y = y.unsqueeze(1)
+            y = y.float()
             # Compute prediction error
             pred, pred_select, pred_aux  = model(X_fullbody, X_face)
             y = y.unsqueeze(1).float()
