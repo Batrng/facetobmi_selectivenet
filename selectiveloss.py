@@ -4,7 +4,7 @@ import wandb
 import numpy as np 
 
 class SelectiveLoss(torch.nn.Module):
-    def __init__(self, loss_func, coverage:float, lm:float=32.0):
+    def __init__(self, loss_func, coverage:float, lm:float=16.0):
         """
         Args:
             loss_func: base loss function. the shape of loss_func(x, target) shoud be (B). 
@@ -90,7 +90,7 @@ class SelectiveLoss(torch.nn.Module):
         #target = target.squeeze(-1)
         print(target)
 
-        accuracy = (torch.abs(prediction_out - target) < 0.02).float()
+        accuracy = (torch.abs(prediction_out - target) < 0.05).float()
         num = torch.dot(g, accuracy)
         return num / torch.sum(g)
 
