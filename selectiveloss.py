@@ -4,7 +4,7 @@ import wandb
 import numpy as np 
 
 class SelectiveLoss(torch.nn.Module):
-    def __init__(self, loss_func, coverage:float, lm:float=16.0):
+    def __init__(self, loss_func, coverage:float, lm:float=32.0):
         """
         Args:
             loss_func: base loss function. the shape of loss_func(x, target) shoud be (B). 
@@ -33,15 +33,22 @@ class SelectiveLoss(torch.nn.Module):
         empirical_risk = (self.loss_func(prediction_out, target)*selection_out.view(-1)).mean()
         empirical_risk = empirical_risk / empirical_coverage
 
-        # compute penulty (=psi)
+        # Compute incorrect predictions (where the prediction is wrong)
+        wrong_predictions = (torch.abs(prediction_out - target) > 0.05).float()  # Adjust threshold as necessary
+
+        # Penalize high selection scores for wrong predictions
+        penalty_for_confident_wrong = torch.mean(wrong_predictions * selection_out.view(-1))        
+
+        # compute penalty (=psi)
         coverage = torch.tensor([self.coverage], dtype=torch.float32, requires_grad=True, device='cuda')
         penalty = torch.max(coverage-empirical_coverage, torch.tensor([0.0], dtype=torch.float32, requires_grad=True, device='cuda'))**2
-        penalty *= self.lm
+        #penalty *= self.lm
+        penalty += penalty_for_confident_wrong * self.lm
 
         selective_loss = empirical_risk + penalty
 
         # compute coverage based on source implementation
-        selective_head_coverage = self.get_coverage(selection_out, threshold=0.5)
+        selective_head_coverage = self.get_coverage(selection_out, threshold=0.7)
 
         # compute selective accuracy based on source implementation
         selective_head_selective_acc = self.get_selective_acc(prediction_out, selection_out, target)
@@ -61,7 +68,7 @@ class SelectiveLoss(torch.nn.Module):
 
         return selective_loss#, loss_dict
     
-    def selective_acc(y_true, y_pred):
+    '''def selective_acc(y_true, y_pred):
     # g represents whether the model is confident (i.e., didn't abstain) based on threshold of 0.5
         g = (y_pred[:, -1] > 0.5).float()
 
@@ -76,7 +83,7 @@ class SelectiveLoss(torch.nn.Module):
         selective_accuracy = correct_predictions.sum() / g.sum()
 
         return selective_accuracy
-
+'''
 
     def get_selective_acc(self, prediction_out, selection_out, target):
         """
@@ -85,7 +92,7 @@ class SelectiveLoss(torch.nn.Module):
             prediction_out: (B,num_classes)
             selection_out:  (B, 1)
         """
-        g = (selection_out.squeeze(-1) > 0.5).float()
+        g = (selection_out.squeeze(-1) > 0.7).float()
         prediction_out = prediction_out.squeeze(-1)
         #target = target.squeeze(-1)
         print(target)
