@@ -4,7 +4,7 @@ import wandb
 import numpy as np 
 
 class SelectiveLoss(torch.nn.Module):
-    def __init__(self, loss_func, coverage:float, lm:float=32.0):
+    def __init__(self, loss_func, coverage:float, lm:float=10.0):
         """
         Args:
             loss_func: base loss function. the shape of loss_func(x, target) shoud be (B). 
