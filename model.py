@@ -21,7 +21,11 @@ class HeightEstimationNet(nn.Module):
         # Fully connected layers after concatenation of body and face features
         self.fc1 = nn.Linear(2048 + 1280, 1024)  # 2048 from ResNet, 1280 from EfficientNet-B0
         self.fc2 = nn.Linear(1024, 512)
-        self.fc3 = nn.Linear(512, 1)  # Predicting a single value (height)
+        self.fc3 = nn.Linear(512, 1)  # Predicting a single value (height)   
+
+        # Two separate outputs: one for height prediction (mean) and one for log variance
+        self.fc_mu = nn.Linear(512, 1)  # Predicting height (mean)
+        self.fc_log_sigma = nn.Linear(512, 1)  # Predicting log(variance)
     
     def forward(self, body_crop, face_crop):
         # Coarse stream: full-body crop through ResNet50
@@ -41,5 +45,8 @@ class HeightEstimationNet(nn.Module):
         x = self.fc2(x)
         x = torch.relu(x)
         x = self.fc3(x)  # Output predicted height
-        
-        return x
+        # Predict height (mean) and log variance
+        mu = self.fc_mu(x)  # Predicted mean (height)
+        log_sigma = self.fc_log_sigma(x)  # Predicted log(variance)
+        return mu, log_sigma
+        #return x

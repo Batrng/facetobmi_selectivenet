@@ -6,6 +6,7 @@ from model import HeightEstimationNet
 import numpy as np
 import argparse
 import wandb
+from uncertaintyloss import UncertaintyLoss
 
 
 # train one epoch
@@ -23,21 +24,22 @@ def train(train_loader, model, loss_fn, optimizer):
         y = y.to(device)
 
         # Compute prediction error
-        pred = model(X_fullbody, X_face)
-        y = y.unsqueeze(1).float()
-        loss_mse_train = nn.MSELoss()(pred, y)
-        train_loss_mse += loss_mse_train.item()
-        loss_mae = nn.L1Loss()(pred, y)
-        train_loss_mae += loss_mae.item()
+        mu_pred, log_sigma_pred = model(X_fullbody, X_face)
+        #y = y.unsqueeze(1).float()
+        loss = loss_fn(y, mu_pred, log_sigma_pred)
+        #loss_mse_train = nn.MSELoss()(pred, y)
+        #train_loss_mse += loss_mse_train.item()
+        #loss_mae = nn.L1Loss()(pred, y)
+        #train_loss_mae += loss_mae.item()
 
         # Backpropagation
         optimizer.zero_grad()
-        loss_mse_train.backward()
+        loss.backward()
         optimizer.step()
         train_counter += 1
-        wandb.log({"loss_train": loss_mse_train.item(), "train_log_cnt": train_counter})
-    loss_mse_train /= len(train_loader)
-    loss_mae /= len(train_loader)
+        wandb.log({"loss_train": loss.item(), "train_log_cnt": train_counter, "mu_pred": mu_pred, "log_sigma_pred":log_sigma_pred})
+    #loss_mse_train /= len(train_loader)
+    #loss_mae /= len(train_loader)
 
 
 
@@ -56,21 +58,17 @@ def validate(val_loader, model):
             X_fullbody = X_fullbody.to(device)
             y = y.to(device)
 
-            pred = model(X_fullbody, X_face)
-            y = y.unsqueeze(1)
-
-            loss_mse_val = nn.MSELoss()(pred, y)
-            val_loss_mse += loss_mse_val.item()
-            loss_mae = nn.L1Loss()(pred, y)
-            val_loss_mae += loss_mae.item()
+            mu_pred, log_sigma_pred = model(X_fullbody, X_face)
+            #y = y.unsqueeze(1).float()
+            loss = loss_fn(y, mu_pred, log_sigma_pred)
             val_counter += 1
-            wandb.log({"loss_val": loss_mse_val.item(), "val_log_cnt": val_counter})
+            wandb.log({"loss_val": loss(), "val_log_cnt": val_counter, "mu_pred": mu_pred, "log_sigma_pred":log_sigma_pred})
 
-    val_loss_mse /= len(val_loader)
-    val_loss_mae /= len(val_loader)
+    #val_loss_mse /= len(val_loader)
+    #val_loss_mae /= len(val_loader)
 
 
-    return val_loss_mae
+    return log_sigma_pred
 
 
 
@@ -89,20 +87,21 @@ def test(test_loader, model):
             X_fullbody = X_fullbody.to(device)
             y = y.to(device)
 
-            pred = model(X_fullbody, X_face)
-            y = y.unsqueeze(1)
+            mu_pred, log_sigma_pred = model(X_fullbody, X_face)
+            #y = y.unsqueeze(1).float()
+            loss = loss_fn(y, mu_pred, log_sigma_pred)
 
-            loss_mse_test = nn.MSELoss()(pred, y)
-            test_loss_mse += loss_mse_test.item()
-            loss_mae = nn.L1Loss()(pred, y)
-            test_loss_mae += loss_mae.item()
+            #loss_mse_test = nn.MSELoss()(pred, y)
+            #test_loss_mse += loss_mse_test.item()
+            #loss_mae = nn.L1Loss()(pred, y)
+            #test_loss_mae += loss_mae.item()
             test_counter +=1
-            wandb.log({"loss_test": loss_mse_test.item(), "test_log_cnt": test_counter})
+            wandb.log({"loss_test": loss(), "test_log_cnt": test_counter, "mu_pred": mu_pred, "log_sigma_pred":log_sigma_pred})
 
-    test_loss_mse /= len(test_loader)
-    test_loss_mae /= len(test_loader)
+    #test_loss_mse /= len(test_loader)
+    #test_loss_mae /= len(test_loader)
 
-    return test_loss_mse, test_loss_mae
+    return loss #test_loss_mse, test_loss_mae
 
 
 
@@ -155,7 +154,7 @@ if __name__ == "__main__":
 
     train_loader, val_loader, test_loader = get_dataloaders(args.batchsize, augmented=args.augmented, vit_transformed=False, show_sample=False)
     model = HeightEstimationNet().to(device)
-    loss_fn = nn.MSELoss()
+    loss_fn = UncertaintyLoss().to(device)
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
     epochs = args.epochs
     early_stopping = EarlyStopping(patience=5, verbose=True)
