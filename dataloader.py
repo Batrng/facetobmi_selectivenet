@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import random
 from PIL import Image
 from matplotlib import pyplot as plt
 from torch.utils.data import random_split
@@ -45,7 +46,29 @@ class BMIDataset(Dataset):
             image_face = self.transform(image_face)
 
         return image_fullbody, image_face, y
+
+class AugmentedBMIDataset(Dataset):
+    def __init__(self, original_dataset, transforms=None):
+        self.original_dataset = original_dataset
+        self.transforms = transforms
+
+    def __len__(self):
+        return len(self.original_dataset)  # No multiplication
+
+    def __getitem__(self, idx):
+        # Get the original images and target
+        image_fullbody, image_face, y = self.original_dataset[idx]
+
+        # Apply transformations with a probability
+        if self.transforms and random.random() > 0.5:  # 50% chance to apply transformations
+            image_fullbody = self.transforms(image_fullbody)
+            image_face = self.transforms(image_face)
+
+        return image_fullbody, image_face, y
     
+    def get_image_name(self, idx):
+        return self.image_paths[idx]
+    '''
 class AugmentedBMIDataset(Dataset):
     def __init__(self, original_dataset, transforms=None):
         self.original_dataset = original_dataset
@@ -61,7 +84,7 @@ class AugmentedBMIDataset(Dataset):
             image_fullbody = self.transforms(image_fullbody)
             image_face = self.transforms(image_face)
         return image_fullbody, image_face, y
-
+'''
 class RandomDistortion(torch.nn.Module):
     def __init__(self, probability=0.25, grid_width=2, grid_height=2, magnitude=8):
         super().__init__()
@@ -100,15 +123,15 @@ augmentation_transforms = T.Compose([
 ])
 
 def get_dataloaders(batch_size=16, augmented=True, vit_transformed=True, show_sample=False):
-    bmi_dataset = BMIDataset('/home/nguyenbt/nobackup/face-to-bmi-vit/height.csv', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_v1/', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_face/', 'height', ToTensor())
+    bmi_dataset = BMIDataset('/home/nguyenbt/nobackup/face-to-bmi-vit/height.csv', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_v1/', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_face', 'height', ToTensor())
     if show_sample:
         train_dataset, val_dataset, test_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
         #show_sample_image(train_dataset)
     train_dataset, val_dataset, test_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers= 2, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers= 2, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers= 2, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers= 16, pin_memory=True, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers= 16, pin_memory=True, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers= 16, pin_memory=True, shuffle=False)
     return train_loader, test_loader, val_loader
 
 def train_val_test_split(dataset, augmented=True, vit_transformed=True):
