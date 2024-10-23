@@ -35,7 +35,7 @@ def train(train_loader, model, loss_fn, optimizer):
         loss_mse_train.backward()
         optimizer.step()
         train_counter += 1
-        wandb.log({"loss_train": loss_mse_train.item(), "train_log_cnt": train_counter, "mae_train": loss_mae})
+        wandb.log({"loss_train": loss_mse_train.item(), "train_log_cnt": train_counter, "mae_train": loss_mae, "accuracy_train": get_accuracy(pred, y)})
     loss_mse_train /= len(train_loader)
     loss_mae /= len(train_loader)
 
@@ -64,7 +64,7 @@ def validate(val_loader, model):
             loss_mae = nn.L1Loss()(pred, y)
             val_loss_mae += loss_mae.item()
             val_counter += 1
-            wandb.log({"loss_val": loss_mse_val.item(), "val_log_cnt": val_counter, "mae_val": loss_mae})
+            wandb.log({"loss_val": loss_mse_val.item(), "val_log_cnt": val_counter, "mae_val": loss_mae, "accuracy_train": get_accuracy(pred, y)})
 
     val_loss_mse /= len(val_loader)
     val_loss_mae /= len(val_loader)
@@ -97,14 +97,17 @@ def test(test_loader, model):
             loss_mae = nn.L1Loss()(pred, y)
             test_loss_mae += loss_mae.item()
             test_counter +=1
-            wandb.log({"loss_test": loss_mse_test.item(), "test_log_cnt": test_counter, "mae_train": loss_mae})
+            wandb.log({"loss_test": loss_mse_test.item(), "test_log_cnt": test_counter, "mae_train": loss_mae, "accuracy_train": get_accuracy(pred, y)})
 
     test_loss_mse /= len(test_loader)
     test_loss_mae /= len(test_loader)
 
     return test_loss_mse, test_loss_mae
 
+def get_accuracy(pred, target): #TODO: Check implementation with Lili
 
+        accuracy = (torch.abs(pred - target) < 0.05).float()
+        return torch.mean(accuracy)
 
 # helper class for early stopping
 class EarlyStopping:
