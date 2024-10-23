@@ -238,7 +238,7 @@ def process_images(input_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_D
             shutil.copy2(source_file, output_folder)
             print(f"Copied {filename} to {output_folder}")
         else:
-            print(f"{filename} does not exist in {"/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_face"}, skipping.")
+            print(f"{filename} does not exist in, skipping.")
 
 
 if __name__ == "__main__":
