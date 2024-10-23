@@ -10,3 +10,7 @@ class UncertaintyLoss(nn.Module):
         sigma = torch.exp(log_sigma)  # Convert log(sigma) back to sigma
         loss = (1 / (2 * sigma**2)) * (y_true - y_pred)**2 + log_sigma
         return torch.mean(loss)
+
+    def get_accuracy():
+        accuracy = (torch.abs(pred - target) < 0.05).float()
+        return accuracy.mean()
