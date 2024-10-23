@@ -225,7 +225,7 @@ def croppedFace(image_id):
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
 
-def process_images(input_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_v3/", output_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_new/"):
+def process_images(input_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_v4/", output_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_v1/"):
     os.makedirs(output_folder, exist_ok=True)
 
     # Loop through each file in the source folder
