@@ -119,7 +119,7 @@ class SelectiveLoss(torch.nn.Module):
             selection_out:  (B, 1)
         """ 
         #num = torch.sum((torch.argmax(auxiliary_out, dim=-1) == target).float())
-        accuracy = (torch.abs(auxiliary_out - target) < 0.02).float()
+        accuracy = (torch.abs(auxiliary_out - target) < 0.05).float()
         return torch.mean(accuracy)
     
     # based on source implementation
