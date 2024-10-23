@@ -92,6 +92,9 @@ class SelectiveLoss(torch.nn.Module):
             prediction_out: (B,num_classes)
             selection_out:  (B, 1)
         """
+        assert not torch.isnan(prediction_out).any(), "prediction_out contains NaNs"
+        assert not torch.isnan(selection_out).any(), "selection_out contains NaNs"
+        assert not torch.isnan(target).any(), "target contains NaNs"
         g = (selection_out.squeeze(-1) > 0.7).float()
         prediction_out = prediction_out.squeeze(-1)
         #target = target.squeeze(-1)
