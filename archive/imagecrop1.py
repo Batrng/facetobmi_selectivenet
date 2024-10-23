@@ -240,7 +240,7 @@ def process_images(input_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_D
         else:
             print(f"{filename} does not exist in, skipping.")
 
-def process_images2(input_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody/", output_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_new/"):
+def process_images2(input_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody/", output_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_v1/"):
     os.makedirs(output_folder, exist_ok=True)
 
     # Get a set of existing filenames in the destination folder
