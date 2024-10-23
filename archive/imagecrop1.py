@@ -258,7 +258,7 @@ def process_images2(input_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_
 
 
 if __name__ == "__main__":
-    process_images()
+    process_images2()
     #croppedBodywholeimgheight()
     #croppedFace()
     #croppedBody(25441) #43192
