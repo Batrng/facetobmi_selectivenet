@@ -240,9 +240,25 @@ def process_images(input_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_D
         else:
             print(f"{filename} does not exist in, skipping.")
 
+def process_images2(input_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody/", output_folder="/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_new/"):
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Get a set of existing filenames in the destination folder
+    existing_files = set(os.listdir(output_folder))
+
+    # Iterate over each file in the source folder
+    for filename in os.listdir(input_folder):
+        # Check if the file is unique (not in the destination folder)
+        if filename not in existing_files:
+            source_file = os.path.join(input_folder, filename)
+            destination_file = os.path.join(output_folder, filename)
+
+            # Copy the file
+            shutil.copy2(source_file, destination_file)
+
 
 if __name__ == "__main__":
-    process_images()
+    process_images2()
     #croppedBodywholeimgheight()
     #croppedFace()
     #croppedBody(25441) #43192
