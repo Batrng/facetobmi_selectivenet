@@ -152,7 +152,20 @@ def test(test_loader, model, loss_selective):
     return test_loss_mse, test_loss_mae
 
 
-
+def post_calibrate(model, data_loader, coverage):
+    out_select_all = []
+    with torch.autograd.no_grad():
+        for i, (X_face, X_fullbody, y) in enumerate(data_loader):
+            model.eval()
+            x = x.to('cuda', non_blocking=True)
+            t = t.to('cuda', non_blocking=True)
+            # forward
+            out_class, out_select, out_aux = model(X_fullbody, X_face)
+            out_select_all.append(out_select.cpu().detach().numpy())
+    out_select_all = np.concatenate(out_select_all, axis=0)
+    threshold = np.percentile(out_select.cpu().detach().numpy(), 100 - 100 * coverage)
+    print('>>> Threshold found is : ', threshold)
+    return threshold
 # helper class for early stopping
 class EarlyStopping:
     def __init__(self, patience=5, verbose=False, delta=0):
@@ -200,7 +213,7 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', type=int, default=5, help='set to True to use augmented dataset')
     args = parser.parse_args()
 
-    train_loader, val_loader, test_loader = get_dataloaders(args.batchsize, augmented=args.augmented, vit_transformed=False, show_sample=False)
+    train_loader, val_loader, test_loader, calibration_loader = get_dataloaders(args.batchsize, augmented=args.augmented, vit_transformed=False, show_sample=False)
     features = HeightEstimationNet().to(device)
     model = SelectiveNet(features=features).to(device)
     loss_fn = nn.MSELoss()
@@ -228,6 +241,7 @@ if __name__ == "__main__":
         #model.load_state_dict(torch.load('/home/nguyenbt/nobackup/face-to-bmi-vit/weights/checkpoint.pt'))
         torch.save(model.state_dict(), '../weights/checkpoint_selective.pt')
         test(test_loader, model,loss_selective)
+        post_calibrate(model, calibration_loader, 0.7)
         wandb.finish()
         #print("Done!")
 

@@ -4,7 +4,7 @@ import wandb
 import numpy as np 
 
 class SelectiveLoss(torch.nn.Module):
-    def __init__(self, loss_func, coverage:float, lm:float=10.0):
+    def __init__(self, loss_func, coverage:float, lm:float=32.0):
         """
         Args:
             loss_func: base loss function. the shape of loss_func(x, target) shoud be (B). 
@@ -34,16 +34,16 @@ class SelectiveLoss(torch.nn.Module):
         empirical_risk = empirical_risk / empirical_coverage
 
         # Compute incorrect predictions (where the prediction is wrong)
-        wrong_predictions = (torch.abs(prediction_out - target) > 0.05).float()  # Adjust threshold as necessary
+        #wrong_predictions = (torch.abs(prediction_out - target) > 0.05).float()  # Adjust threshold as necessary
 
         # Penalize high selection scores for wrong predictions
-        penalty_for_confident_wrong = torch.mean(wrong_predictions * selection_out.view(-1))        
+        #penalty_for_confident_wrong = torch.mean(wrong_predictions * selection_out.view(-1))        
 
         # compute penalty (=psi)
         coverage = torch.tensor([self.coverage], dtype=torch.float32, requires_grad=True, device='cuda')
         penalty = torch.max(coverage-empirical_coverage, torch.tensor([0.0], dtype=torch.float32, requires_grad=True, device='cuda'))**2
-        #penalty *= self.lm
-        penalty += penalty_for_confident_wrong * self.lm
+        penalty *= self.lm
+        # penalty += penalty_for_confident_wrong * self.lm
 
         selective_loss = empirical_risk + penalty
 

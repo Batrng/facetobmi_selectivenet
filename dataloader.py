@@ -125,21 +125,24 @@ augmentation_transforms = T.Compose([
 def get_dataloaders(batch_size=16, augmented=True, vit_transformed=True, show_sample=False):
     bmi_dataset = BMIDataset('/home/nguyenbt/nobackup/face-to-bmi-vit/height.csv', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_fullbody_v1/', '/home/nguyenbt/nobackup/data/2019_Mhse_Height_Data/combined_face', 'height', ToTensor())
     if show_sample:
-        train_dataset, val_dataset, test_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
+        train_dataset, val_dataset, test_dataset, calibration_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
         #show_sample_image(train_dataset)
-    train_dataset, val_dataset, test_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
+    train_dataset, val_dataset, test_dataset, calibration_dataset = train_val_test_split(bmi_dataset, augmented, vit_transformed=False)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers= 16, pin_memory=True, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers= 16, pin_memory=True, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers= 16, pin_memory=True, shuffle=False)
-    return train_loader, test_loader, val_loader
+    calibration_loader = DataLoader(calibration_dataset, batch_size=batch_size, num_workers= 16, pin_memory=True, shuffle=False)
+    return train_loader, test_loader, val_loader, calibration_loader
 
 def train_val_test_split(dataset, augmented=True, vit_transformed=True):
     val_size = int(0.1 * len(dataset))
     test_size = int(0.2 * len(dataset))
-    train_size = len(dataset) - val_size - test_size
+    calibration_size = int(0.1 * len(dataset))
+    train_size = len(dataset) - val_size - test_size - calibration_size
 
-    train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
+
+    train_dataset, val_dataset, test_dataset, calibration_dataset = random_split(dataset, [train_size, val_size, test_size, calibration_size])
 
     if augmented:
         train_dataset = AugmentedBMIDataset(train_dataset, augmentation_transforms)
@@ -149,7 +152,7 @@ def train_val_test_split(dataset, augmented=True, vit_transformed=True):
     #    val_dataset = VitTransformedDataset(val_dataset)
     #    test_dataset = VitTransformedDataset(test_dataset)
 
-    return train_dataset, val_dataset, test_dataset
+    return train_dataset, val_dataset, test_dataset, calibration_dataset
 
 if __name__ == "__main__":
     get_dataloaders(augmented=False, show_sample=True)
